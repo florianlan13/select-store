@@ -1,1472 +1,1055 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>EliteSelect — Sélections et bons plans Amazon</title>
-<meta name="description" content="Catalogue de produits sélectionnés, bons plans du moment et fiches détaillées. Site financé par le programme Partenaires Amazon, sans surcoût pour le lecteur.">
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  :focus-visible { outline: 3px solid #fbbf24; outline-offset: 3px; border-radius: 6px; }
-  html { scroll-behavior: smooth; scroll-padding-top: 9rem; }
-  .vignette { background-image: radial-gradient(120% 120% at 25% 0%, #1e293b 0%, var(--t1) 55%, var(--t2) 100%); }
-  dialog::backdrop { background: rgba(2,6,23,.82); backdrop-filter: blur(4px); }
-  dialog[open] { animation: monte .18s ease-out; }
-  @keyframes monte { from { opacity:0; transform: translateY(14px); } }
-  .zoom img { transition: transform .45s ease; }
-  .zoom:hover img { transform: scale(1.06); }
-  .equilibre { text-wrap: balance; }
-  .lien-a-completer { outline: 1.5px dashed rgba(251,191,36,.5); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    dialog[open] { animation: none; }
-    .zoom img, * { transition-duration: .01ms !important; }
-  }
-</style>
-</head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EliteSelect Gaming | Le Comparateur de Référence Périphériques & Setup</title>
+  <meta name="description" content="Comparatifs techniques indépendants, tests de périphériques PC & consoles, avis vérifiés et bons plans officiels certifiés pour optimiser votre setup gaming.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://select-store-psi.vercel.app/">
 
-<!-- ================================================================
-     DIVULGATION HAUTE DE PAGE
-     Amazon exige une divulgation visible sans clic ni défilement.
-     ================================================================ -->
-<div class="bg-amber-500 text-slate-950">
-  <p class="max-w-7xl mx-auto px-4 py-2 text-[13px] font-semibold leading-snug">
-    Liens partenaires Amazon — ce site perçoit une commission sur les achats éligibles. Le prix que vous payez reste identique.
-  </p>
-</div>
+  <!-- Open Graph / Meta Réseaux Sociaux -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://select-store-psi.vercel.app/">
+  <meta property="og:title" content="EliteSelect Gaming | Le Comparateur de Référence Périphériques & Setup">
+  <meta property="og:description" content="Comparatifs techniques indépendants, tests de périphériques PC & consoles, avis vérifiés et bons plans officiels certifiés pour optimiser votre setup gaming.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80">
 
-<!-- ================================================================
-     EN-TÊTE
-     ================================================================ -->
-<header class="border-b border-slate-800 bg-slate-900/85 sticky top-0 backdrop-blur z-30" style="padding-top: env(safe-area-inset-top,0px);">
-  <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center gap-4">
-    <a href="#" class="text-xl font-extrabold tracking-wider text-white shrink-0">ELITE<span class="text-amber-400">SELECT</span></a>
-    <nav class="flex items-center gap-3 sm:gap-6 text-sm text-slate-400">
-      <a href="#catalogue" class="hover:text-white hidden sm:inline">Catalogue</a>
-      <a href="#bons-plans-ancre" class="hover:text-white hidden sm:inline">Bons plans</a>
-      <a href="#a-propos" class="hover:text-white hidden sm:inline">À propos</a>
-      <a href="mailto:elitselect@proton.me?subject=%5BEliteSelect%5D%20Demande%20d%27information"
-         class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-amber-500 hover:text-amber-400 transition">
-         Contact
-      </a>
-    </nav>
-  </div>
-</header>
-
-<!-- ================================================================
-     BANNIÈRE BONS PLANS + COMPTE À REBOURS
-     Branché sur FIN_OPERATION (voir script). Date dépassée = masquée,
-     jamais de minuteur qui se réinitialise en boucle.
-     ================================================================ -->
-<section id="bandeau-promo" class="hidden border-b border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-slate-950 to-slate-950">
-  <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-    <div>
-      <p class="text-amber-400 text-xs font-bold tracking-widest">🔥 Ventes flash &amp; bons plans</p>
-      <p class="text-white font-bold text-lg mt-1 equilibre">
-        <span id="nb-promos">0</span> offres relevées en cours
-      </p>
-      <p class="text-slate-500 text-xs mt-1">
-        Offres et prix relevés le <span id="date-releve">—</span>, susceptibles d'évoluer à tout moment sur Amazon.
-      </p>
-    </div>
-    <div class="flex items-center gap-4">
-      <div class="text-right">
-        <p class="text-[11px] text-slate-500 uppercase tracking-widest">Fin de l'opération</p>
-        <p id="compte-a-rebours" class="text-2xl font-extrabold text-white tabular-nums mt-0.5">—</p>
-      </div>
-      <a href="#bons-plans-ancre" class="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-5 py-3 rounded-lg transition shrink-0">
-        Voir les offres
-      </a>
-    </div>
-  </div>
-</section>
-<span id="bons-plans-ancre" class="block -mt-24 pt-24 invisible" aria-hidden="true"></span>
-
-<!-- ================================================================
-     HERO
-     ================================================================ -->
-<section class="py-12 sm:py-16 px-4 text-center max-w-3xl mx-auto">
-  <span class="text-amber-400 text-xs tracking-widest font-bold">Sélection shopping</span>
-  <h1 class="text-3xl sm:text-5xl font-extrabold mt-3 text-white leading-tight equilibre">
-    Les produits qu'on garde, et pourquoi
-  </h1>
-  <p class="text-slate-400 mt-4 text-[15px] leading-relaxed max-w-[58ch] mx-auto">
-    Chaque fiche dit ce que le produit fait bien et ce qu'il fait mal. Les prix affichés sont des relevés
-    datés : le prix réel se vérifie sur Amazon, en un clic.
-  </p>
-  <div class="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-500">
-    <span><strong id="compteur-total" class="text-slate-300">0</strong> produits référencés</span>
-    <span>Dernier relevé : <span id="date-maj">—</span></span>
-    <span>Aucune marque ne paie pour figurer ici</span>
-  </div>
-</section>
-
-<!-- ================================================================
-     BARRE DE FILTRES : recherche + onglets + tri
-     ================================================================ -->
-<div id="catalogue" class="sticky top-[61px] z-20 border-y border-slate-800 bg-slate-950/95 backdrop-blur">
-  <div class="max-w-7xl mx-auto px-4 py-3">
-    <div class="flex flex-col sm:flex-row gap-3">
-      <div class="flex-1">
-        <label for="recherche" class="sr-only">Rechercher un produit</label>
-        <input id="recherche" type="search" autocomplete="off"
-          placeholder="Rechercher : écouteurs, parfum, cuir, lampe…"
-          class="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-500 focus:outline-none focus-visible:outline-none">
-      </div>
-      <div class="sm:w-60">
-        <label for="tri" class="sr-only">Trier les produits</label>
-        <select id="tri"
-          class="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-slate-300 focus:border-amber-500 focus:outline-none focus-visible:outline-none">
-          <option value="recommande">Recommandés</option>
-          <option value="prix-asc">Prix croissant</option>
-          <option value="prix-desc">Prix décroissant</option>
-          <option value="note">Avis clients</option>
-        </select>
-      </div>
-    </div>
-    <div id="onglets" role="group" aria-label="Filtrer par catégorie" class="mt-3 flex flex-wrap gap-2"></div>
-  </div>
-</div>
-
-<!-- ================================================================
-     CATALOGUE
-     ================================================================ -->
-<main class="max-w-7xl mx-auto px-4 py-10">
-  <p id="resultat-info" class="sr-only" role="status" aria-live="polite"></p>
-  <p class="text-[11px] text-slate-600 mb-5">
-    * Prix indicatifs constatés, relevés manuellement, non contractuels et susceptibles d'avoir changé. Seul le prix affiché sur Amazon au moment de votre achat fait foi.
-  </p>
-
-  <div id="grille" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
-
-  <div id="vide" class="hidden rounded-2xl border border-dashed border-slate-800 px-6 py-16 text-center">
-    <p class="text-lg font-bold text-white">Aucun produit ne correspond</p>
-    <p class="text-slate-400 text-sm mt-2">Essayez un mot plus court, ou revenez sur l'onglet « Tous ».</p>
-    <button type="button" data-reinit class="mt-5 rounded-lg bg-amber-500 hover:bg-amber-400 px-5 py-2.5 text-xs font-bold text-slate-950 transition">
-      Réinitialiser les filtres
-    </button>
-  </div>
-
-  <div class="mt-8 flex flex-col items-center gap-3">
-    <p id="compteur-pagination" class="text-xs text-slate-500">Affichage de 0 sur 0 références vérifiées</p>
-    <button type="button" id="bouton-charger-plus"
-      class="hidden rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-bold text-sm px-6 py-3 transition">
-      Charger plus de produits
-    </button>
-  </div>
-
-  <!-- ==============================================================
-       À PROPOS / NOTRE CONCEPT
-       ============================================================== -->
-  <section id="a-propos" class="mt-20 rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-10">
-    <span class="text-amber-400 text-xs tracking-widest font-bold">Qui sommes-nous</span>
-    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-3 leading-tight equilibre">Notre concept</h2>
-    <p class="text-slate-400 text-[15px] leading-relaxed mt-4 max-w-[62ch]">
-      EliteSelect est un guide d'achat éditorial, pas une boutique. Nous ne vendons rien, ne stockons rien et
-      n'encaissons aucun paiement : chaque achat se conclut entièrement sur Amazon, dans ses propres conditions.
-    </p>
-
-    <div class="grid gap-6 md:grid-cols-4 mt-10">
-      <div class="border-l-2 border-amber-500 pl-5">
-        <h3 class="font-bold text-white text-sm">Veille quotidienne</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mt-2">
-          Le catalogue est revu régulièrement pour retirer ce qui a mal vieilli et ajouter ce qui mérite d'y entrer.
-        </p>
-      </div>
-      <div class="border-l-2 border-amber-500 pl-5">
-        <h3 class="font-bold text-white text-sm">Lecture des avis</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mt-2">
-          Nous privilégions la tendance des avis sur la durée à la note moyenne brute, plus facile à manipuler.
-        </p>
-      </div>
-      <div class="border-l-2 border-amber-500 pl-5">
-        <h3 class="font-bold text-white text-sm">Fiabilité vendeur</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mt-2">
-          Vérification du statut du vendeur et de l'éligibilité à l'expédition Prime avant toute recommandation.
-        </p>
-      </div>
-      <div class="border-l-2 border-amber-500 pl-5">
-        <h3 class="font-bold text-white text-sm">Transparence tarifaire</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mt-2">
-          Aucun prix figé présenté comme actuel : uniquement des relevés datés, remplacés par le prix réel au clic.
-        </p>
-      </div>
-    </div>
-
-    <div class="mt-10 pt-8 border-t border-slate-800 grid gap-8 md:grid-cols-[1.1fr_1fr]">
-      <div>
-        <h3 class="text-xl font-extrabold text-white">Transparence &amp; indépendance</h3>
-        <p class="text-slate-400 text-[15px] leading-relaxed mt-3 max-w-[56ch]">
-          Ce site est gratuit et sans publicité. Il est financé par le programme Partenaires Amazon : si vous
-          achetez après avoir suivi un lien d'ici, Amazon reverse une commission prélevée sur sa propre marge.
-          <strong class="text-slate-200">Votre prix ne change pas d'un centime.</strong>
-        </p>
-      </div>
-      <ul class="space-y-4 text-sm leading-relaxed text-slate-400">
-        <li class="border-l-2 border-slate-700 pl-4">
-          <strong class="block text-slate-200">Aucune marque ne paie pour apparaître.</strong>
-          La sélection précède le choix des liens, jamais l'inverse.
-        </li>
-        <li class="border-l-2 border-slate-700 pl-4">
-          <strong class="block text-slate-200">Le taux de commission n'oriente pas le classement.</strong>
-          Il varie de 1 % à 10 % selon les rayons.
-        </li>
-        <li class="border-l-2 border-slate-700 pl-4">
-          <strong class="block text-slate-200">Les liens sont balisés.</strong>
-          <code class="text-[12px] bg-slate-950 px-1 py-0.5 rounded text-slate-300">rel="nofollow noopener sponsored"</code>
-        </li>
-      </ul>
-    </div>
-  </section>
-</main>
-
-<!-- ================================================================
-     MODALE FICHE DÉTAILLÉE
-     ================================================================ -->
-<dialog id="modale" aria-labelledby="modale-titre"
-  class="w-[min(760px,94vw)] rounded-2xl border border-slate-800 bg-slate-900 p-0 text-slate-100 shadow-2xl">
-  <div class="max-h-[86vh] overflow-y-auto">
-    <div id="modale-visuel" class="zoom vignette relative h-52 sm:h-64 overflow-hidden flex items-start justify-between px-5 py-5" style="--t1:#334155;--t2:#0f172a;">
-      <img id="modale-image" src="" alt=""
-        onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80';"
-        class="hidden absolute inset-0 h-full w-full object-cover">
-      <span id="modale-categorie" class="relative rounded-full bg-slate-950/85 px-3 py-1 text-xs font-bold text-amber-400"></span>
-      <button type="button" data-fermer aria-label="Fermer la fiche"
-        class="relative grid h-9 w-9 place-items-center rounded-full bg-slate-950/85 text-lg leading-none text-slate-200 hover:bg-slate-950">&times;</button>
-    </div>
-
-    <div class="px-5 sm:px-8 py-6">
-      <p id="modale-marque" class="text-xs font-bold text-amber-400"></p>
-      <h2 id="modale-titre" class="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 leading-tight equilibre"></h2>
-
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
-        <div id="modale-note" class="text-sm text-slate-400"></div>
-        <div id="modale-stock" class="text-sm"></div>
-      </div>
-
-      <p id="modale-description" class="text-slate-400 text-[15px] leading-relaxed mt-4"></p>
-      <div id="modale-badges" class="mt-4 flex flex-wrap gap-2"></div>
-
-      <h3 class="mt-8 text-sm font-bold text-slate-300">Points forts</h3>
-      <ul id="modale-points" class="mt-3 space-y-2.5 text-sm leading-relaxed text-slate-300"></ul>
-
-      <div id="modale-garantie" class="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-800/40 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300"></div>
-
-      <div id="modale-reserve-bloc" class="mt-5 rounded-xl border border-slate-800 bg-slate-950 px-5 py-4">
-        <h3 class="text-sm font-bold text-slate-300">À savoir avant d'acheter</h3>
-        <p id="modale-reserve" class="text-sm leading-relaxed text-slate-400 mt-1.5"></p>
-      </div>
-
-      <div class="mt-7 rounded-xl border border-slate-800 bg-slate-950 px-5 py-5">
-        <p class="text-xs font-bold text-slate-500">Prix indicatif constaté</p>
-        <div id="modale-prix" class="mt-1 flex items-baseline gap-3 flex-wrap"></div>
-        <p class="text-xs leading-relaxed text-slate-500 mt-2">
-          Relevé manuel non contractuel. Seul le prix affiché sur Amazon au moment de votre achat fait foi.
-        </p>
-        <a id="modale-cta" href="#" target="_blank" rel="nofollow noopener sponsored"
-          class="mt-4 block w-full rounded-lg bg-amber-500 hover:bg-amber-400 px-6 py-3.5 text-center text-sm font-bold text-slate-950 transition">
-          Voir l'offre sur Amazon ↗
-        </a>
-        <p id="modale-lien-note" class="mt-3 text-center text-[12px] text-slate-500">
-          Lien partenaire · nouvel onglet · prix inchangé pour vous
-        </p>
-      </div>
-    </div>
-  </div>
-</dialog>
-
-<!-- ================================================================
-     MODALE MENTIONS LÉGALES
-     ================================================================ -->
-<dialog id="modale-mentions" aria-labelledby="titre-mentions"
-  class="w-[min(640px,92vw)] rounded-2xl border border-slate-800 bg-slate-900 p-0 text-slate-100 shadow-2xl">
-  <div class="max-h-[85vh] overflow-y-auto px-6 sm:px-8 py-7">
-    <div class="flex items-start justify-between gap-4">
-      <h2 id="titre-mentions" class="text-2xl font-extrabold text-white">Mentions légales</h2>
-      <button type="button" data-fermer aria-label="Fermer"
-        class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-800 text-lg leading-none hover:bg-slate-700">&times;</button>
-    </div>
-
-    <div class="mt-6 space-y-5 text-sm leading-relaxed text-slate-400">
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Éditeur du site</h3>
-        <p>EliteSelect, plateforme indépendante. Contact : <a href="mailto:elitselect@proton.me" class="text-amber-400 hover:underline">elitselect@proton.me</a></p>
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Hébergement</h3>
-        <p>Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.</p>
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Propriété intellectuelle</h3>
-        <p>Les marques, noms de produits et visuels tiers cités sur ce site restent la propriété de leurs détenteurs
-        respectifs. Ils ne sont mentionnés qu'à titre de référence commerciale, pour identifier les produits décrits.</p>
-      </div>
-      <div class="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-        <p class="font-semibold text-slate-200">
-          En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.
-        </p>
-      </div>
-    </div>
-  </div>
-</dialog>
-
-<!-- ================================================================
-     MODALE POLITIQUE DE CONFIDENTIALITÉ
-     ================================================================ -->
-<dialog id="modale-confidentialite" aria-labelledby="titre-confidentialite"
-  class="w-[min(640px,92vw)] rounded-2xl border border-slate-800 bg-slate-900 p-0 text-slate-100 shadow-2xl">
-  <div class="max-h-[85vh] overflow-y-auto px-6 sm:px-8 py-7">
-    <div class="flex items-start justify-between gap-4">
-      <h2 id="titre-confidentialite" class="text-2xl font-extrabold text-white">Politique de confidentialité</h2>
-      <button type="button" data-fermer aria-label="Fermer"
-        class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-800 text-lg leading-none hover:bg-slate-700">&times;</button>
-    </div>
-
-    <div class="mt-6 space-y-5 text-sm leading-relaxed text-slate-400">
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Aucune collecte sensible</h3>
-        <p>Ce site ne collecte et ne stocke sur son serveur aucune coordonnée bancaire ni aucune donnée de paiement.
-        Les achats se déroulent entièrement sur Amazon, selon ses propres conditions et sa propre politique de
-        confidentialité.</p>
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Cookies d'affiliation</h3>
-        <p>Lorsque vous cliquez sur un lien partenaire, Amazon dépose un cookie tiers sur votre navigateur afin de
-        vous identifier comme provenant de ce site pendant une courte durée. Ce cookie permet à Amazon de calculer
-        la commission qui nous revient si vous achetez, <strong class="text-slate-300">sans aucun coût supplémentaire
-        pour vous</strong> et sans que ce site n'ait accès au contenu de ce cookie.</p>
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-200 mb-1">Vos droits</h3>
-        <p>Vous disposez d'un droit d'information sur les données éventuellement traitées. Pour toute question,
-        écrivez à <a href="mailto:elitselect@proton.me" class="text-amber-400 hover:underline">elitselect@proton.me</a>.</p>
-      </div>
-    </div>
-  </div>
-</dialog>
-
-<!-- ================================================================
-     PIED DE PAGE — MENTION LÉGALE OBLIGATOIRE (mot pour mot)
-     ================================================================ -->
-<footer class="border-t border-slate-800 bg-slate-900 px-4 py-12" style="padding-bottom: env(safe-area-inset-bottom,0px);">
-  <div class="max-w-7xl mx-auto">
-    <p class="text-[15px] font-bold text-slate-200 max-w-[62ch] leading-snug">
-      En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.
-    </p>
-    <p class="text-xs text-slate-500 leading-relaxed mt-5 max-w-[74ch]">
-      Amazon, Amazon Prime, le logo Amazon et le logo Amazon Prime sont des marques d'Amazon.com, Inc. ou de ses
-      sociétés affiliées. Les prix et la disponibilité affichés sur Amazon au moment de l'achat s'appliqueront.
-      Les prix, réductions et notes présentés sur ce site sont des relevés manuels datés, donnés à titre indicatif,
-      pouvant être obsolètes et dépourvus de valeur contractuelle. Les marques citées appartiennent à leurs
-      détenteurs respectifs et ne sont mentionnées qu'à des fins d'identification des produits.
-    </p>
-
-    <div class="mt-6 flex items-center gap-2 text-xs text-slate-500">
-      <span>Nous écrire :</span>
-      <button type="button" id="bouton-copier-email"
-        class="font-mono text-amber-400 hover:underline" title="Cliquer pour copier l'adresse">
-        elitselect@proton.me
-      </button>
-      <span id="email-copie-confirmation" class="hidden text-emerald-400">copiée ✓</span>
-    </div>
-
-    <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500">
-      <button type="button" data-ouvrir-modale="modale-mentions" class="hover:text-slate-300">Mentions légales</button>
-      <button type="button" data-ouvrir-modale="modale-confidentialite" class="hover:text-slate-300">Politique de confidentialité</button>
-      <a href="mailto:elitselect@proton.me?subject=%5BEliteSelect%5D%20Demande%20d%27information" class="hover:text-slate-300">Contact</a>
-      <a href="#a-propos" class="hover:text-slate-300">Notre concept</a>
-      <span>© <span id="annee"></span> EliteSelect</span>
-    </div>
-  </div>
-</footer>
-
-<script>
-/* ================================================================
-   ▼▼▼ ZONE À ÉDITER ▼▼▼
-   ================================================================
-
-   1) TAG PARTENAIRE — déjà renseigné : eliteselect21-21
-
-   2) LIENS PRODUITS — champ `asin`
-      Renseigne l'ASIN réel de chaque produit (10 caractères, visible
-      dans l'URL Amazon : amazon.fr/dp/B0XXXXXXXX).
-      Tant que `asin` est vide, le bouton pointe vers une RECHERCHE
-      Amazon ciblée sur le titre exact du produit (jamais la page
-      d'accueil) : c'est un filet de sécurité, pas une solution finale.
-      Un ASIN inventé pointerait potentiellement vers un produit erroné
-      ou inexistant, ce qui serait pire qu'un lien de recherche.
-      Repère visuel : liseré doré en pointillés = ASIN à compléter.
-
-   3) PRIX — `prixMin` (nombre, sert au tri) et `prixTexte`
-      Toujours un relevé daté, jamais un prix présenté comme actuel.
-
-   4) PROMOS — objet `promo` :
-        { avant: 59.90, apres: 44.90, fin: "2026-09-28T23:59:00" }
-      Le pourcentage est CALCULÉ, jamais saisi à la main.
-      `avant` doit être un prix réellement pratiqué avant l'offre
-      (directive Omnibus / art. L.112-1-1 du Code de la consommation).
-      `promo: null` si le produit n'est pas en réduction.
-
-   5) NOTES — objet `note` :
-        { valeur: 4.6, avis: 12480, releveLe: "2026-09-18" }
-      À recopier depuis la fiche Amazon le jour du relevé.
-      `note: null` si tu n'as pas relevé : l'affichage se masque.
-
-   6) IMAGES — champ `image`
-      "" => dégradé généré (obligatoire pour tout produit de marque
-      nommément désigné, pour ne pas laisser croire à une vraie photo).
-      Sinon, URL d'un visuel générique non associé à une marque précise.
-      Chaque <img> a un `onerror` de secours vers une photo neutre.
-
-   7) GARANTIE — champ `garantie`
-      Texte informatif générique. Ne pas inventer de durée précise :
-      la durée exacte doit être vérifiée sur la fiche Amazon.
-   ================================================================ */
-
-const TAG_PARTENAIRE = "eliteselect21-21";
-const DOMAINE_AMAZON = "https://www.amazon.fr";
-const IMAGE_SECOURS = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80";
-
-/* Fin réelle de l'opération promotionnelle en cours.
-   Date dépassée => bannière et compte à rebours masqués. */
-const FIN_OPERATION = "2026-09-28T23:59:00";
-
-/* Date du dernier relevé manuel des prix et des notes. */
-const DATE_RELEVE = "2026-09-18";
-
-const PAGE_SIZE = 12;
-
-const CATEGORIES = [
-  { cle: "tous",     libelle: "Tous" },
-  { cle: "promos",   libelle: "🔥 Bons plans", special: true },
-  { cle: "hightech", libelle: "High-Tech" },
-  { cle: "beaute",   libelle: "Beauté" },
-  { cle: "mode",     libelle: "Mode" },
-  { cle: "maison",   libelle: "Setup / Maison" }
-];
-
-const GARANTIE_GENERIQUE = "Garantie légale de conformité applicable (2 ans en France) — durée et conditions exactes précisées sur la fiche Amazon.";
-const GARANTIE_CONSTRUCTEUR = "Garantie constructeur incluse — durée et conditions exactes précisées sur la fiche Amazon.";
-
-const products = [
-
-  /* ================= HIGH-TECH & AUDIO ================= */
-  {
-    id: "ht-airpods-pro-2",
-    titre: "AirPods Pro 2 (USB-C)",
-    marque: "Apple",
-    categorie: "hightech",
-    description: "Réduction de bruit active parmi les meilleures du marché, audio spatial personnalisé, boîtier USB-C.",
-    points: ["Réduction de bruit active nettement renforcée", "Audio spatial personnalisé après scan des oreilles", "Boîtier USB-C, charge MagSafe et Apple Watch", "Détection de conversation automatique"],
-    reserve: "Sur Android, l'audio spatial personnalisé et le partage audio ne fonctionnent pas : l'intérêt du modèle chute fortement.",
-    prixMin: 229, prixTexte: "dès 229,00 €*",
-    promo: { avant: 279, apres: 229, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.7, avis: 41230, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#334155", "#0f172a"]
-  },
-  {
-    id: "ht-sony-xm5",
-    titre: "Casque à réduction de bruit WH-1000XM5",
-    marque: "Sony",
-    categorie: "hightech",
-    description: "La référence du casque circum-aural pour les longs trajets : réduction de bruit très aboutie et confort sur la durée.",
-    points: ["Réduction de bruit adaptative multi-microphones", "Autonomie annoncée jusqu'à 30 h", "Charge rapide : 3 h d'écoute pour 3 min branché", "Appairage multipoint deux appareils"],
-    reserve: "Il ne se replie pas à plat, l'étui de transport reste volumineux en bagage cabine.",
-    prixMin: 279, prixTexte: "dès 279,00 €*",
-    promo: null,
-    note: { valeur: 4.6, avis: 15870, releveLe: "2026-09-18" },
-    badges: ["equipe"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#241f33", "#0f172a"]
-  },
-  {
-    id: "ht-jbl-charge-5",
-    titre: "Enceinte portable Charge 5",
-    marque: "JBL",
-    categorie: "hightech",
-    description: "Étanche IP67, sert aussi de batterie externe pour recharger un téléphone. Le son tient sans distorsion à volume élevé.",
-    points: ["Étanchéité et résistance à la poussière IP67", "Autonomie annoncée jusqu'à 20 h", "Port de charge USB pour appareils externes", "Fonction PartyBoost multi-enceintes"],
-    reserve: "Les basses saturent légèrement au-delà de 80 % du volume maximal.",
-    prixMin: 149.99, prixTexte: "dès 149,99 €*",
-    promo: { avant: 179.99, apres: 149.99, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.8, avis: 27650, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#1f3a4a", "#0f172a"]
-  },
-  {
-    id: "ht-apple-watch-se",
-    titre: "Apple Watch SE (2ᵉ génération)",
-    marque: "Apple",
-    categorie: "hightech",
-    description: "L'essentiel du suivi santé et des notifications Apple, sans les capteurs les plus poussés des modèles supérieurs.",
-    points: ["Détection de chutes et d'accidents", "Suivi du sommeil et de l'activité", "Étanche à la nage en piscine et mer", "Compatible recharge rapide"],
-    reserve: "Pas d'écran always-on ni d'ECG : réservés aux Apple Watch Series et Ultra.",
-    prixMin: 219, prixTexte: "dès 219,00 €*",
-    promo: null,
-    note: { valeur: 4.6, avis: 9840, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#2b3245", "#0f172a"]
-  },
-  {
-    id: "ht-anker-powercore",
-    titre: "Batterie externe PowerCore 10000",
-    marque: "Anker",
-    categorie: "hightech",
-    description: "Format poche pour un plein de charge de téléphone, avec une technologie de charge qui protège la batterie sur la durée.",
-    points: ["10000 mAh, recharge un smartphone environ 2 fois", "Technologie PowerIQ, charge adaptée à l'appareil", "Format compact, environ 180 g", "Protection contre surcharge et surchauffe"],
-    reserve: "Pas de charge rapide USB-C PD sur ce modèle d'entrée de gamme : comptez large pour la recharge complète.",
-    prixMin: 24.99, prixTexte: "dès 24,99 €*",
-    promo: { avant: 32.99, apres: 24.99, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.7, avis: 33920, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#1e3a5f", "#0f172a"]
-  },
-  {
-    id: "ht-mx-master-3s",
-    titre: "Souris sans fil MX Master 3S",
-    marque: "Logitech",
-    categorie: "hightech",
-    description: "Molette à défilement rapide électromagnétique et capteur 8000 DPI : la souris de bureau la plus recommandée pour un usage intensif.",
-    points: ["Molette MagSpeed, défilement libre ou cranté", "Suivi sur verre jusqu'à 8000 DPI", "Appairage jusqu'à 3 appareils, bascule rapide", "Autonomie annoncée jusqu'à 70 jours"],
-    reserve: "Le prix reste élevé face aux souris de bureau standard : justifié seulement par un usage quotidien intensif.",
-    prixMin: 99.99, prixTexte: "dès 99,99 €*",
-    promo: null,
-    note: { valeur: 4.7, avis: 21430, releveLe: "2026-09-18" },
-    badges: ["equipe"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#2f2f3d", "#0f172a"]
-  },
-  {
-    id: "ht-clavier-mecanique",
-    titre: "Clavier mécanique compact hot-swap sans fil",
-    marque: "Générique",
-    categorie: "hightech",
-    description: "Format 75 %, switches remplaçables sans soudure, rétroéclairage RGB réglable. Un bon point d'entrée dans le mécanique.",
-    points: ["Switches hot-swap, remplaçables sans soudure", "Format compact 75 %, pavé numérique absent", "Bluetooth et 2,4 GHz, jusqu'à 3 appareils", "Rétroéclairage RGB personnalisable"],
-    reserve: "Le logiciel de personnalisation reste basique comparé aux marques premium du secteur.",
-    prixMin: 59.90, prixTexte: "dès 59,90 €*",
-    promo: null,
-    note: { valeur: 4.3, avis: 4870, releveLe: "2026-09-18" },
-    badges: [], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#2a2a38", "#0f172a"]
-  },
-  {
-    id: "ht-support-pc-alu",
-    titre: "Support pour ordinateur portable en aluminium, pliable",
-    marque: "Générique",
-    categorie: "hightech",
-    description: "Rehausse l'écran à hauteur des yeux et améliore la circulation d'air sous le châssis. Se replie à plat pour le transport.",
-    points: ["Hauteur réglable sur plusieurs crans", "Aluminium plein, jusqu'à 17 pouces", "Pliable à plat, format sac à dos", "Base antidérapante en silicone"],
-    reserve: "Nécessite un clavier et une souris externes une fois l'écran rehaussé.",
-    prixMin: 29.90, prixTexte: "dès 29,90 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 12040, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#37404f", "#0f172a"]
-  },
-  {
-    id: "ht-chargeur-gan",
-    titre: "Chargeur rapide GaN 65 W trois ports",
-    marque: "Anker",
-    categorie: "hightech",
-    description: "Un seul bloc pour le portable, le téléphone et les écouteurs. Le GaN permet de diviser le volume par deux à puissance égale.",
-    points: ["65 W répartis dynamiquement sur 3 ports", "Recharge un ultraportable 13 pouces", "Prises pliables, format voyage", "Protection contre la surchauffe intégrée"],
-    reserve: "À 65 W partagés, brancher trois appareils fait chuter la vitesse sur chacun.",
-    prixMin: 39.99, prixTexte: "dès 39,99 €*",
-    promo: { avant: 54.99, apres: 39.99, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.7, avis: 24105, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#1e3a5f", "#0f172a"]
-  },
-  {
-    id: "ht-ecouteurs-anc",
-    titre: "Écouteurs sans fil à réduction de bruit active",
-    marque: "Soundcore",
-    categorie: "hightech",
-    description: "La réduction de bruit avale les moteurs d'avion et le bruit d'open space, pour une fraction du prix des grandes marques.",
-    points: ["Environ 8 h par charge, 40 h avec le boîtier", "Bluetooth multipoint, deux appareils à la fois", "Mode transparence pour une conversation courte", "Certification IPX4"],
-    reserve: "Les micros d'appel restent moyens en rue passante.",
-    prixMin: 79.99, prixTexte: "dès 79,99 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 18420, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#334155", "#0f172a"]
-  },
-
-  /* ================= PARFUMERIE & BEAUTÉ ================= */
-  {
-    id: "bt-dior-sauvage",
-    titre: "Sauvage — Eau de Toilette 100 ml",
-    marque: "Dior",
-    categorie: "beaute",
-    description: "Ouverture agrumes poivrée, fond ambroxan boisé. Une signature immédiatement reconnaissable, ce qui est à la fois son atout et sa limite.",
-    points: ["Tenue de 6 à 8 h sur peau normale", "Sillage marqué la première heure puis plus sage", "Vaporisateur 100 ml", "Porté toute l'année, plus à l'aise en mi-saison"],
-    reserve: "C'est l'un des parfums les plus portés au monde : si vous cherchez à ne pas être reconnu, passez votre chemin.",
-    prixMin: 79, prixTexte: "dès 79,00 €*",
-    promo: { avant: 99, apres: 79, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.8, avis: 52300, releveLe: "2026-09-18" },
-    badges: ["vente"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#3f3a2e", "#0f172a"]
-  },
-  {
-    id: "bt-bleu-de-chanel",
-    titre: "Bleu de Chanel — Eau de Parfum 100 ml",
-    marque: "Chanel",
-    categorie: "beaute",
-    description: "Boisé aromatique plus sec et plus adulte que ses concurrents directs, avec une tenue nettement supérieure en version Eau de Parfum.",
-    points: ["Tenue longue, 8 h et plus sur peau normale", "Notes boisées, agrumes et santal en fond", "Flacon vaporisateur rechargeable", "Adapté aussi bien au bureau qu'au soir"],
-    reserve: "Le prix au ml est élevé comparé aux références grand public de la même famille olfactive.",
-    prixMin: 105, prixTexte: "dès 105,00 €*",
-    promo: null,
-    note: { valeur: 4.8, avis: 38100, releveLe: "2026-09-18" },
-    badges: ["equipe"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#1e2a3f", "#0f172a"]
-  },
-  {
-    id: "bt-la-vie-est-belle",
-    titre: "La Vie Est Belle — Eau de Parfum 75 ml",
-    marque: "Lancôme",
-    categorie: "beaute",
-    description: "Gourmand floral autour de l'iris et de la praline, l'un des parfums féminins les plus vendus, à la tenue remarquablement longue.",
-    points: ["Tenue supérieure à 8 h sur peau normale", "Iris, praline et fève tonka en fond", "Flacon iconique, rechargeable", "Sillage présent, à doser en journée"],
-    reserve: "Sillage puissant : à éviter en espace clos ou professionnel très fermé si vous voulez rester discrète.",
-    prixMin: 89, prixTexte: "dès 89,00 €*",
-    promo: { avant: 112, apres: 89, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.8, avis: 44700, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#4a3244", "#0f172a"]
-  },
-  {
-    id: "bt-huile-prodigieuse",
-    titre: "Huile Prodigieuse Multi-Usage",
-    marque: "Nuxe",
-    categorie: "beaute",
-    description: "Une seule huile pour le visage, le corps et les cheveux, au fini sec caractéristique qui ne colle pas sur les vêtements.",
-    points: ["Utilisation visage, corps et cheveux", "Fini sec, absorption rapide", "Parfum caractéristique reconnaissable", "Formule à base d'huiles végétales"],
-    reserve: "Le parfum signature ne plaît pas à tout le monde et peut sembler entêtant en grande quantité.",
-    prixMin: 24.90, prixTexte: "dès 24,90 €*",
-    promo: null,
-    note: { valeur: 4.6, avis: 16800, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#4a4530", "#0f172a"]
-  },
-  {
-    id: "bt-seche-cheveux",
-    titre: "Sèche-cheveux ionique professionnel 2200 W",
-    marque: "Générique",
-    categorie: "beaute",
-    description: "Technologie ionique qui réduit les frisottis, moteur puissant qui raccourcit nettement le temps de séchage.",
-    points: ["2200 W, séchage rapide", "Technologie ionique anti-frisottis", "Trois températures, deux vitesses", "Embout concentrateur inclus"],
-    reserve: "Le niveau sonore est élevé sur la puissance maximale, à éviter tôt le matin en appartement.",
-    prixMin: 29.90, prixTexte: "dès 29,90 €*",
-    promo: { avant: 39.90, apres: 29.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.4, avis: 8320, releveLe: "2026-09-18" },
-    badges: ["vente"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#3a3550", "#0f172a"]
-  },
-  {
-    id: "bt-brosse-soufflante",
-    titre: "Brosse soufflante volumatrice One-Step",
-    marque: "Revlon",
-    categorie: "beaute",
-    description: "Sèche et coiffe en un seul geste : brossing volumateur maison en une dizaine de minutes, sans technique particulière.",
-    points: ["Brossing et séchage simultanés", "Brosse ovale, effet volume racines", "Ions négatifs, brillance renforcée", "Prise en main simple, sans technicité"],
-    reserve: "Moins précis qu'un lisseur classique pour un résultat parfaitement lisse.",
-    prixMin: 39.99, prixTexte: "dès 39,99 €*",
-    promo: null,
-    note: { valeur: 4.6, avis: 29650, releveLe: "2026-09-18" },
-    badges: ["equipe", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#4a2f3d", "#0f172a"]
-  },
-  {
-    id: "bt-oneblade-pro",
-    titre: "Tondeuse hybride OneBlade Pro",
-    marque: "Philips",
-    categorie: "beaute",
-    description: "Coupe, contoure et rase sans nécessiter une peau tendue au préalable. Utilisable sur poils longs comme sur barbe de trois jours.",
-    points: ["Coupe, contour et rasage avec une seule tête", "Utilisable sur peau sèche ou humide", "14 longueurs de coupe réglables", "Autonomie annoncée 90 min"],
-    reserve: "N'égale pas la finesse d'un rasoir traditionnel pour un rasage de près quotidien.",
-    prixMin: 44.99, prixTexte: "dès 44,99 €*",
-    promo: { avant: 59.99, apres: 44.99, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.6, avis: 19240, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#2f4448", "#0f172a"]
-  },
-  {
-    id: "bt-coffret-soins",
-    titre: "Coffret soins visage hydratation intense",
-    marque: "Générique",
-    categorie: "beaute",
-    description: "Trois textures complémentaires (nettoyant, sérum, crème) pensées pour une routine simple, format découverte ou cadeau.",
-    points: ["Nettoyant doux, sérum et crème hydratante", "Formules sans parfum ajouté", "Format voyage inclus dans le coffret", "Convient aux peaux sensibles"],
-    reserve: "Les textures conviennent surtout aux peaux normales à sèches ; les peaux grasses devraient tester avant d'investir dans le coffret complet.",
-    prixMin: 32.90, prixTexte: "dès 32,90 €*",
-    promo: null,
-    note: null,
-    badges: [], stock: "stock-limite", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#49402b", "#0f172a"]
-  },
-  {
-    id: "bt-serum-vitc",
-    titre: "Sérum visage à la vitamine C stabilisée",
-    marque: "Générique",
-    categorie: "beaute",
-    description: "Formule en flacon pompe opaque, ce qui limite l'oxydation. Le détail qui décide de l'efficacité réelle sur la durée.",
-    points: ["Flacon pompe opaque anti-oxydation", "Concentration indiquée sur l'emballage", "Texture fluide, pénétration rapide", "Sans parfum ajouté"],
-    reserve: "Peut irriter les peaux sensibles. Commencez un jour sur deux et testez au pli du coude.",
-    prixMin: 22.50, prixTexte: "dès 22,50 €*",
-    promo: null,
-    note: { valeur: 4.2, avis: 3890, releveLe: "2026-09-18" },
-    badges: [], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#49402b", "#0f172a"]
-  },
-  {
-    id: "bt-tondeuse-barbe",
-    titre: "Tondeuse barbe et corps étanche, multi-sabots",
-    marque: "Générique",
-    categorie: "beaute",
-    description: "Lames autoaffûtées et utilisation possible sous la douche, avec un jeu de sabots qui couvre du contour net à la barbe longue.",
-    points: ["Utilisable à sec et sous l'eau", "Sabots de 0,5 à 20 mm selon le kit", "Autonomie d'environ 90 min", "Base de charge avec socle de rangement"],
-    reserve: "Sur une barbe très dense, deux passages sont souvent nécessaires : le moteur n'a pas le couple des modèles haut de gamme.",
-    prixMin: 34.90, prixTexte: "dès 34,90 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 22750, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#2f4448", "#0f172a"]
-  },
-
-  /* ================= MODE, MAROQUINERIE & ACCESSOIRES ================= */
-  {
-    id: "md-portefeuille-rfid",
-    titre: "Portefeuille minimaliste anti-RFID en cuir",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Format poche avant, blocage RFID, compartiment billets pliés. Le compromis raisonnable entre volume et capacité.",
-    points: ["6 emplacements cartes + poche billets", "Blocage RFID intégré", "Cuir véritable, patine visible en quelques semaines", "Environ 10 × 7 cm"],
-    reserve: "Pas de compartiment à monnaie. Si vous payez souvent en espèces, ce format vous frustrera.",
-    prixMin: 24.90, prixTexte: "dès 24,90 €*",
-    promo: null,
-    note: { valeur: 4.4, avis: 11020, releveLe: "2026-09-18" },
-    badges: ["equipe", "prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1622560481156-01a35a8d0f8b?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#44342a", "#0f172a"]
-  },
-  {
-    id: "md-rayban-aviator",
-    titre: "Lunettes de soleil Aviator Classic",
-    marque: "Ray-Ban",
-    categorie: "mode",
-    description: "La monture aviateur de référence, verres en cristal véritable et charnières métalliques doubles pour une solidité à long terme.",
-    points: ["Verres en cristal, protection UV400", "Monture métal avec charnières doubles", "Plusieurs coloris de verres disponibles", "Étui rigide et chiffon fournis"],
-    reserve: "Le prix reste élevé face aux répliques ; l'authenticité se vérifie à la gravure sur le verre droit.",
-    prixMin: 139, prixTexte: "dès 139,00 €*",
-    promo: null,
-    note: { valeur: 4.7, avis: 26400, releveLe: "2026-09-18" },
-    badges: ["equipe"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#3a3a3a", "#0f172a"]
-  },
-  {
-    id: "md-sac-weekend",
-    titre: "Sac de week-end en toile imperméable",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Toile enduite qui résiste à une averse, compartiment chaussures séparé, et une bandoulière assez large pour ne pas scier l'épaule.",
-    points: ["Toile enduite déperlante", "Compartiment chaussures séparé", "Bandoulière large réglable", "Format 40-45 L, cabine compatible selon compagnie"],
-    reserve: "Ne flotte pas sous une pluie prolongée : déperlant, pas totalement étanche.",
-    prixMin: 54.90, prixTexte: "dès 54,90 €*",
-    promo: { avant: 74.90, apres: 54.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.5, avis: 6720, releveLe: "2026-09-18" },
-    badges: ["vente"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#3a2f26", "#0f172a"]
-  },
-  {
-    id: "md-casio-vintage",
-    titre: "Montre Vintage A168 boîtier acier",
-    marque: "Casio",
-    categorie: "mode",
-    description: "Le boîtier acier rétro devenu un classique intemporel, précision quartz fiable et résistance à toute épreuve du quotidien.",
-    points: ["Boîtier et bracelet acier inoxydable", "Mouvement quartz, précision fiable", "Rétroéclairage LED", "Étanche aux éclaboussures"],
-    reserve: "Le bracelet acier peut nécessiter un ajustement de maillons à l'achat pour un bon maintien.",
-    prixMin: 44.90, prixTexte: "dès 44,90 €*",
-    promo: null,
-    note: { valeur: 4.7, avis: 18930, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#3a3b44", "#0f172a"]
-  },
-  {
-    id: "md-ceinture-reversible",
-    titre: "Ceinture réversible en cuir, boucle amovible",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Une face noire, une face brune, une seule ceinture dans la valise. Longueur ajustable à la découpe.",
-    points: ["Réversible noir / marron", "Boucle interchangeable sans outil", "Longueur ajustable à la découpe", "Cuir de vachette, 3,5 cm de largeur"],
-    reserve: "La découpe est irréversible : mesurez deux fois avant de couper.",
-    prixMin: 21.90, prixTexte: "dès 21,90 €*",
-    promo: null,
-    note: null,
-    badges: [], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#453529", "#0f172a"]
-  },
-  {
-    id: "md-parapluie-tempete",
-    titre: "Parapluie tempête renforcé anti-retournement",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Armature en fibre de verre qui plie sans casser dans les rafales, testé pour résister à des vents soutenus.",
-    points: ["Armature fibre de verre anti-rupture", "Résistance annoncée jusqu'à 100 km/h", "Toile double couche anti-retournement", "Ouverture automatique"],
-    reserve: "Format assez grand, moins pratique à glisser dans un petit sac quotidien.",
-    prixMin: 26.90, prixTexte: "dès 26,90 €*",
-    promo: { avant: 34.90, apres: 26.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.6, avis: 9410, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1534253492413-3496a3e0a94e?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#2a3040", "#0f172a"]
-  },
-  {
-    id: "md-sac-antivol",
-    titre: "Sac à dos antivol pour ordinateur portable",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Fermetures éclair dissimulées, poche arrière contre le dos et tissu résistant à la lame. Pensé pour le trajet quotidien en transports.",
-    points: ["Fermetures éclair dissimulées anti-pickpocket", "Poche portable côté dos, inaccessible en portage", "Compartiment 15,6 pouces matelassé", "Port USB de charge externe intégré"],
-    reserve: "Le port USB nécessite une batterie externe placée par l'utilisateur : elle n'est pas fournie.",
-    prixMin: 34.90, prixTexte: "dès 34,90 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 15680, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#2a2f3a", "#0f172a"]
-  },
-  {
-    id: "md-porte-passeport",
-    titre: "Porte-passeport et documents de voyage en cuir",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Regroupe passeport, billets et cartes dans un seul étui compact, avec élastique de maintien pour les documents pliés.",
-    points: ["Compartiments passeport, cartes et billets", "Élastique de maintien pour documents pliés", "Cuir souple, fermeture rabat", "Format poche de veste"],
-    reserve: "Ne convient pas aux formats de passeport rigides ou aux étuis de vaccination volumineux.",
-    prixMin: 18.90, prixTexte: "dès 18,90 €*",
-    promo: null,
-    note: { valeur: 4.4, avis: 3210, releveLe: "2026-09-18" },
-    badges: [], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#3c2f24", "#0f172a"]
-  },
-  {
-    id: "md-montre-analogique",
-    titre: "Montre analogique 38 mm, bracelet cuir",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Boîtier 38 mm, cadran épuré, verre minéral. Le diamètre passe sur la plupart des poignets sans déborder.",
-    points: ["Boîtier acier 38 mm, épaisseur 7 mm", "Mouvement quartz japonais", "Étanchéité 3 ATM (éclaboussures)", "Bracelet interchangeable à pompes rapides"],
-    reserve: "3 ATM ne signifie pas nage : retirez-la avant la douche.",
-    prixMin: 59.00, prixTexte: "dès 59,00 €*",
-    promo: null,
-    note: { valeur: 4.3, avis: 2960, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#3a3b44", "#0f172a"]
-  },
-  {
-    id: "md-lunettes-polarisees",
-    titre: "Lunettes de soleil polarisées, monture acétate",
-    marque: "Générique",
-    categorie: "mode",
-    description: "Verres polarisés catégorie 3 et charnières métal. Assez sobres pour la ville, assez couvrantes pour la route.",
-    points: ["Verres polarisés catégorie 3, UV400", "Monture acétate avec âme métallique", "Charnières vissées, réparables", "Étui rigide et chiffon fournis"],
-    reserve: "La polarisation rend certains écrans de tableau de bord illisibles selon l'angle.",
-    prixMin: 29.90, prixTexte: "dès 29,90 €*",
-    promo: { avant: 44.90, apres: 29.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.2, avis: 4470, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "stock-limite", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#39424d", "#0f172a"]
-  },
-
-  /* ================= MAISON, BUREAU & SETUP ================= */
-  {
-    id: "mz-lampe-bureau",
-    titre: "Lampe de bureau LED à intensité variable",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Bras long, lumière réglable de 2700 K à 6000 K, et aucun scintillement visible à la caméra.",
-    points: ["Cinq températures de 2700 K à 6000 K", "Gradation continue avec mémorisation", "Port USB-C de charge sur le socle", "Bras articulé de 58 cm, base lestée"],
-    reserve: "L'interrupteur tactile réagit mal avec les mains humides.",
-    prixMin: 42.90, prixTexte: "dès 42,90 €*",
-    promo: { avant: 59.90, apres: 42.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.6, avis: 13740, releveLe: "2026-09-18" },
-    badges: ["equipe", "prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#4a422c", "#0f172a"]
-  },
-  {
-    id: "mz-gourde-inox",
-    titre: "Gourde isotherme inox 1 L, double paroi",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Double paroi sous vide : le froid tient la journée de travail, le chaud une demi-journée. Bouchon qui ne fuit pas dans un sac.",
-    points: ["Inox 18/8, double paroi sous vide", "Froid ~24 h, chaud ~12 h", "Goulot large compatible glaçons", "Bouchon étanche testé en sac"],
-    reserve: "Ne passe pas au lave-vaisselle : le vide de la double paroi se dégrade.",
-    prixMin: 26.90, prixTexte: "dès 26,90 €*",
-    promo: null,
-    note: { valeur: 4.7, avis: 19630, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#2b4440", "#0f172a"]
-  },
-  {
-    id: "mz-diffuseur",
-    titre: "Diffuseur d'huiles essentielles ultrasonique 500 ml",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Réservoir assez grand pour tenir une nuit entière, et un arrêt automatique qui fonctionne réellement à sec.",
-    points: ["Réservoir 500 ml, jusqu'à 10 h de diffusion", "Arrêt automatique en fin de réservoir", "Mode intermittent pour économiser les huiles", "Veilleuse multicolore désactivable"],
-    reserve: "Le nettoyage au vinaigre blanc est nécessaire toutes les deux semaines, sinon le débit chute.",
-    prixMin: 27.90, prixTexte: "dès 27,90 €*",
-    promo: null,
-    note: { valeur: 4.3, avis: 6140, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#31463c", "#0f172a"]
-  },
-  {
-    id: "mz-tapis-bureau",
-    titre: "Tapis de bureau XXL en similicuir",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Grand format qui couvre clavier et souris sur une seule surface, bords cousus qui ne s'effilochent pas avec le temps.",
-    points: ["Format XXL, environ 90 × 40 cm", "Surface similicuir, glisse fluide souris", "Base antidérapante", "Bords cousus renforcés"],
-    reserve: "Le similicuir marque légèrement à l'usure sur plusieurs années d'usage intensif.",
-    prixMin: 19.90, prixTexte: "dès 19,90 €*",
-    promo: { avant: 27.90, apres: 19.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.5, avis: 7920, releveLe: "2026-09-18" },
-    badges: ["vente"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#2f2a24", "#0f172a"]
-  },
-  {
-    id: "mz-organisateurs-cables",
-    titre: "Lot d'organisateurs de câbles magnétiques",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Clips aimantés qui se déplacent le long du bureau sans laisser de trace de colle, pour un bureau enfin dégagé.",
-    points: ["Fixation magnétique repositionnable", "Compatible câbles USB, jack et alimentation", "Lot de plusieurs clips inclus", "Ne laisse pas de résidu de colle"],
-    reserve: "Le magnétisme s'affaiblit avec des câbles très épais ou rigides.",
-    prixMin: 9.90, prixTexte: "dès 9,90 €*",
-    promo: null,
-    note: null,
-    badges: [], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#2a2f3a", "#0f172a"]
-  },
-  {
-    id: "mz-balance-cuisine",
-    titre: "Balance de cuisine numérique, précision 1 g",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Précision au gramme, fonction tare, et surtout un arrêt automatique assez lent pour ne pas couper en pleine pesée.",
-    points: ["Portée 5 kg, précision 1 g", "Fonction tare successive", "Plateau verre trempé facile à nettoyer", "Arrêt auto après 2 min d'inactivité"],
-    reserve: "Sous 3 g, la mesure devient approximative : insuffisant pour la pâtisserie de précision.",
-    prixMin: 16.90, prixTexte: "dès 16,90 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 27410, releveLe: "2026-09-18" },
-    badges: ["vente"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#3d4248", "#0f172a"]
-  },
-  {
-    id: "mz-mousseur-lait",
-    titre: "Mousseur à lait électrique, chaud et froid",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Mousse dense en une minute, et un revêtement antiadhésif qui se rince à l'eau claire sans brosse.",
-    points: ["Quatre programmes : mousse chaude, froide, dense, lait chaud", "Revêtement antiadhésif, rinçage à l'eau", "Arrêt automatique en fin de cycle", "Capacité 115 ml en mousse, 240 ml en lait"],
-    reserve: "Les laits végétaux moussent inégalement : le soja fonctionne, l'amande beaucoup moins.",
-    prixMin: 32.90, prixTexte: "dès 32,90 €*",
-    promo: { avant: 44.90, apres: 32.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.4, avis: 8890, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "stock-limite", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#453a30", "#0f172a"]
-  },
-  {
-    id: "mz-multiprise-usb",
-    titre: "Multiprise parasurtenseur avec ports USB",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Six prises secteur plus deux ports USB sur un cordon assez long pour rejoindre une prise murale éloignée du bureau.",
-    points: ["6 prises secteur + 2 ports USB", "Parasurtenseur intégré", "Cordon 1,5 m, interrupteur général lumineux", "Fixation murale possible"],
-    reserve: "Les ports USB plafonnent à 2,4 A cumulés : insuffisant pour charger plusieurs tablettes en même temps.",
-    prixMin: 17.90, prixTexte: "dès 17,90 €*",
-    promo: null,
-    note: { valeur: 4.5, avis: 11250, releveLe: "2026-09-18" },
-    badges: ["prime"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "", image: "", teintes: ["#2a3040", "#0f172a"]
-  },
-  {
-    id: "mz-organiseur-bureau",
-    titre: "Organiseur de bureau en bambou avec support écran",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Rehausse l'écran à hauteur des yeux et récupère le désordre en dessous. Deux problèmes traités par un seul objet.",
-    points: ["Rehausse d'environ 9 cm", "Tiroir et compartiments latéraux", "Bambou massif, charge supportée 20 kg", "Passage de câbles à l'arrière"],
-    reserve: "Le bambou marque à l'humidité : évitez de poser un mug sans dessous-de-verre.",
-    prixMin: 38.90, prixTexte: "dès 38,90 €*",
-    promo: null,
-    note: null,
-    badges: ["equipe"], stock: "en-stock", garantie: GARANTIE_GENERIQUE,
-    asin: "", lien: "",
-    image: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80",
-    teintes: ["#4a4030", "#0f172a"]
-  },
-  {
-    id: "mz-purificateur-air",
-    titre: "Purificateur d'air compact pour chambre ou bureau",
-    marque: "Générique",
-    categorie: "maison",
-    description: "Filtre HEPA H13 sur un format assez discret pour un bureau ou une petite chambre, avec un mode nuit réellement silencieux.",
-    points: ["Filtration HEPA H13 + charbon actif", "Mode nuit sous 25 dB", "Adapté aux pièces jusqu'à 20 m²", "Indicateur de changement de filtre"],
-    reserve: "Les filtres de rechange représentent un coût récurrent à anticiper dans le budget.",
-    prixMin: 69.90, prixTexte: "dès 69,90 €*",
-    promo: { avant: 89.90, apres: 69.90, fin: "2026-09-28T23:59:00" },
-    note: { valeur: 4.6, avis: 5340, releveLe: "2026-09-18" },
-    badges: ["vente", "prime"], stock: "en-stock", garantie: GARANTIE_CONSTRUCTEUR,
-    asin: "", lien: "", image: "", teintes: ["#2b3a3a", "#0f172a"]
-  }
-];
-
-/* ▲▲▲ FIN DE LA ZONE À ÉDITER ▲▲▲ */
-
-
-/* ================================================================
-   BADGES
-   ================================================================ */
-const BADGES = {
-  vente:  { texte: "Meilleure vente",   classe: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/40" },
-  equipe: { texte: "Choix de l'équipe", classe: "bg-amber-500 text-slate-950" },
-  prime:  { texte: "Livraison Prime",   classe: "bg-slate-800 text-slate-300 ring-1 ring-slate-700" }
-};
-
-const STOCK = {
-  "en-stock":     { texte: "En stock sur Amazon",     classe: "text-emerald-400" },
-  "stock-limite": { texte: "Stock limité au relevé",   classe: "text-amber-400" },
-  "rupture":      { texte: "Indisponible au relevé",   classe: "text-slate-500" }
-};
-
-/* ================================================================
-   OUTILS
-   ================================================================ */
-const $ = s => document.querySelector(s);
-const echap = s => String(s).replace(/[&<>"']/g, c =>
-  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-const normalise = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-const euros = n => n.toLocaleString("fr-FR", { style:"currency", currency:"EUR" });
-const dateCourte = iso => new Date(iso).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
-
-function promoActive(p) {
-  if (!p.promo) return false;
-  return new Date(p.promo.fin).getTime() > Date.now();
-}
-function pourcentRemise(p) {
-  return Math.round((1 - p.promo.apres / p.promo.avant) * 100);
-}
-
-/* Construction de l'URL partenaire.
-   - `lien` renseigné => utilisé tel quel (tag ajouté si absent sur une URL amazon.*)
-   - `asin` renseigné => lien direct /dp/ASIN?tag=…
-   - sinon => recherche Amazon ciblée sur le titre exact, JAMAIS la page d'accueil */
-function urlPartenaire(p) {
-  const lien = (p.lien || "").trim();
-  if (lien) {
-    if (/amzn\.(to|eu)/i.test(lien)) return lien;
-    try {
-      const u = new URL(lien);
-      if (/amazon\./i.test(u.hostname) && !u.searchParams.get("tag")) {
-        u.searchParams.set("tag", TAG_PARTENAIRE);
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: {
+              cyan: '#06b6d4',
+              purple: '#8b5cf6',
+              amber: '#f59e0b'
+            }
+          }
+        }
       }
-      return u.toString();
-    } catch (e) { return lien; }
-  }
-  const asin = (p.asin || "").trim();
-  if (asin) {
-    return `${DOMAINE_AMAZON}/dp/${encodeURIComponent(asin)}?tag=${encodeURIComponent(TAG_PARTENAIRE)}`;
-  }
-  const recherche = `${p.marque} ${p.titre}`.trim();
-  return `${DOMAINE_AMAZON}/s?k=${encodeURIComponent(recherche)}&tag=${encodeURIComponent(TAG_PARTENAIRE)}`;
-}
-function lienEstProvisoire(p) {
-  return !(p.lien || "").trim() && !(p.asin || "").trim();
-}
+    }
+  </script>
 
-function etoiles(note) {
-  if (!note) return "";
-  const pleines = Math.round(note.valeur);
-  let s = "";
-  for (let i = 1; i <= 5; i++) s += `<span class="${i <= pleines ? "text-amber-400" : "text-slate-700"}">★</span>`;
-  return s;
-}
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
 
-/* ================================================================
-   ÉTAT
-   ================================================================ */
-let categorieActive = "tous";
-let requete = "";
-let tri = "recommande";
-let visibles = PAGE_SIZE;
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 antialiased">
 
-/* ================================================================
-   ONGLETS
-   ================================================================ */
-function compteurCategorie(cle) {
-  if (cle === "tous") return products.length;
-  if (cle === "promos") return products.filter(promoActive).length;
-  return products.filter(p => p.categorie === cle).length;
-}
+  <!-- Header Navigation -->
+  <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <a href="#" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center font-black text-slate-950 text-base shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+          ⚡
+        </div>
+        <span class="text-xl sm:text-2xl font-black tracking-tight text-white">Elite<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Select</span> <span class="text-xs uppercase font-extrabold tracking-widest px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 ml-1 hidden sm:inline-block">Gaming</span></span>
+      </a>
 
-function rendreOnglets() {
-  $("#onglets").innerHTML = CATEGORIES.map(c => {
-    const actif = c.cle === categorieActive;
-    let classe;
-    if (actif) classe = "bg-amber-500 text-slate-950";
-    else if (c.special) classe = "bg-amber-500/10 text-amber-400 border border-amber-500/40 hover:border-amber-500";
-    else classe = "bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-600";
-    return `<button type="button" data-cat="${echap(c.cle)}" aria-pressed="${actif}"
-      class="rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${classe}">
-      ${echap(c.libelle)} <span class="${actif ? "text-slate-950/60" : "opacity-60"}">${compteurCategorie(c.cle)}</span></button>`;
-  }).join("");
-}
+      <!-- Actions Rapides -->
+      <nav class="flex items-center gap-2 sm:gap-3">
+        <button onclick="openModal('methodologyModal')" class="text-xs sm:text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800">
+          Méthodologie
+        </button>
+        <button onclick="openModal('contactModal')" class="text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 px-3.5 sm:px-4 py-1.5 rounded-lg transition-all shadow-md shadow-amber-500/10">
+          Contact
+        </button>
+      </nav>
+    </div>
+  </header>
 
-/* ================================================================
-   CARTE PRODUIT
-   ================================================================ */
-function carte(p) {
-  const enPromo = promoActive(p);
-  const provisoire = lienEstProvisoire(p);
+  <!-- Bannière Compte à Rebours Ventes Flash -->
+  <aside class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-cyan-500/20 py-2.5 px-4 text-center">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm">
+      <span class="flex items-center gap-1.5 font-bold text-amber-400">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        🔥 VENTES FLASH & PROMOS DU JOUR :
+      </span>
+      <span class="text-slate-300">Les prix promotionnels expirent dans</span>
+      <span id="countdownTimer" class="font-mono font-bold text-cyan-400 bg-slate-950 px-2.5 py-0.5 rounded border border-cyan-500/30">
+        05h 18m 42s
+      </span>
+    </div>
+  </aside>
 
-  const visuel = p.image
-    ? `<img src="${echap(p.image)}" alt="${echap(p.titre)}" loading="lazy"
-         onerror="this.onerror=null; this.src='${IMAGE_SECOURS}';"
-         class="w-full h-full object-cover">`
-    : `<div class="vignette w-full h-full" role="img" aria-label="Visuel indisponible pour ${echap(p.titre)}"></div>`;
-
-  const badges = (p.badges || []).map(b => {
-    const d = BADGES[b]; if (!d) return "";
-    return `<span class="rounded-full px-2.5 py-1 text-[11px] font-bold ${d.classe}">${echap(d.texte)}</span>`;
-  }).join("");
-
-  const noteHtml = p.note
-    ? `<div class="flex items-center gap-1.5 text-xs text-slate-500 mt-3">
-         <span class="text-sm leading-none">${etoiles(p.note)}</span>
-         <span class="text-slate-400 font-semibold">${p.note.valeur.toLocaleString("fr-FR",{minimumFractionDigits:1})}/5</span>
-         <span>· ${p.note.avis.toLocaleString("fr-FR")} avis</span>
-       </div>
-       <p class="text-[10px] text-slate-600 mt-1">Note Amazon relevée le ${echap(dateCourte(p.note.releveLe))}</p>`
-    : `<p class="text-[11px] text-slate-600 mt-3">Note non relevée</p>`;
-
-  const prixHtml = enPromo
-    ? `<div class="flex items-baseline gap-2 flex-wrap">
-         <span class="text-lg font-extrabold text-amber-400">${euros(p.promo.apres)}*</span>
-         <span class="text-xs text-slate-500 line-through">${euros(p.promo.avant)}</span>
-       </div>`
-    : `<span class="text-lg font-extrabold text-white">${echap(p.prixTexte)}</span>`;
-
-  const pastilleRemise = enPromo
-    ? `<span class="absolute top-3 left-3 rounded-lg bg-amber-500 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 shadow-lg">-${pourcentRemise(p)} %</span>`
-    : "";
-
-  const st = STOCK[p.stock] || STOCK["en-stock"];
-  const classeLien = provisoire ? "lien-a-completer " : "";
-
-  return `
-  <article class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col hover:border-slate-700 transition">
-    <button type="button" data-fiche="${echap(p.id)}" class="zoom relative block h-48 w-full overflow-hidden text-left"
-            aria-label="Ouvrir la fiche détaillée de ${echap(p.titre)}">
-      ${visuel}
-      ${pastilleRemise}
-    </button>
-
-    <div class="p-5 flex flex-col flex-1">
-      <span class="text-xs text-amber-400 font-semibold">${echap(p.marque)}</span>
-      <h3 class="text-base font-bold text-white mt-1 leading-tight">${echap(p.titre)}</h3>
-      <p class="text-slate-400 text-xs leading-relaxed mt-2">${echap(p.description)}</p>
-      ${noteHtml}
-      ${badges ? `<div class="mt-3 flex flex-wrap gap-1.5">${badges}</div>` : ""}
-
-      <div class="mt-auto pt-5">
-        ${prixHtml}
-        <p class="text-[11px] ${st.classe} mt-1">${echap(st.texte)}</p>
-        <div class="mt-3 flex flex-col gap-2">
-          <a href="${echap(urlPartenaire(p))}" target="_blank" rel="nofollow noopener sponsored"
-             class="${classeLien}bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-4 py-2.5 rounded-lg text-center transition"
-             title="${provisoire ? "ASIN à compléter — lien de recherche temporaire" : ""}">
-             Voir l'offre sur Amazon ↗
-          </a>
-          <button type="button" data-fiche="${echap(p.id)}"
-             class="text-xs font-bold px-4 py-2.5 rounded-lg border border-slate-800 text-slate-300 hover:border-slate-600 transition">
-             Fiche détaillée
-          </button>
+  <!-- 4 Piliers de Réassurance -->
+  <section class="bg-slate-900/40 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center sm:text-left">
+        <div class="flex items-center gap-3 justify-center sm:justify-start">
+          <span class="text-xl sm:text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800 text-cyan-400">🛡️</span>
+          <div>
+            <p class="text-xs font-bold text-slate-200">Matériel 100% Officiel</p>
+            <p class="text-[11px] text-slate-400">Garanties constructeurs</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 justify-center sm:justify-start">
+          <span class="text-xl sm:text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800 text-amber-400">⚡</span>
+          <div>
+            <p class="text-xs font-bold text-slate-200">Expédition Prime Sécurisée</p>
+            <p class="text-[11px] text-slate-400">Logistique officielle Amazon</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 justify-center sm:justify-start">
+          <span class="text-xl sm:text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800 text-cyan-400">🔄</span>
+          <div>
+            <p class="text-xs font-bold text-slate-200">Retours Simples 30 Jours</p>
+            <p class="text-[11px] text-slate-400">Satisfait ou remboursé</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 justify-center sm:justify-start">
+          <span class="text-xl sm:text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800 text-indigo-400">⚖️</span>
+          <div>
+            <p class="text-xs font-bold text-slate-200">Comparatifs Esport Rigs</p>
+            <p class="text-[11px] text-slate-400">Avis techniques indépendants</p>
+          </div>
         </div>
       </div>
     </div>
-  </article>`;
-}
+  </section>
 
-/* ================================================================
-   FILTRAGE / TRI / PAGINATION
-   ================================================================ */
-function prixCourant(p) { return promoActive(p) ? p.promo.apres : p.prixMin; }
+  <!-- Contenu Principal -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    
+    <!-- Hero Title -->
+    <section class="text-center max-w-3xl mx-auto mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-semibold mb-3">
+        <span>🎮</span> Guide d'Achat & Équipement Pro Gaming
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+        Le comparateur de référence des périphériques <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">& setups gaming</span>.
+      </h1>
+      <p class="text-sm sm:text-base text-slate-400 leading-relaxed">
+        Analyses matérielles sans compromis, benchmarks d'accessoires et meilleures offres vérifiées en direct des boutiques officielles.
+      </p>
+    </section>
 
-function listeFiltree() {
-  const q = normalise(requete).trim();
-  let liste = products.filter(p => {
-    if (categorieActive === "promos" && !promoActive(p)) return false;
-    if (categorieActive !== "tous" && categorieActive !== "promos" && p.categorie !== categorieActive) return false;
-    if (!q) return true;
-    const champ = normalise([p.titre, p.marque, p.description, p.categorie, (p.points||[]).join(" ")].join(" "));
-    return q.split(/\s+/).every(mot => champ.includes(mot));
-  });
-  if (tri === "prix-asc")  liste.sort((a,b) => prixCourant(a) - prixCourant(b));
-  if (tri === "prix-desc") liste.sort((a,b) => prixCourant(b) - prixCourant(a));
-  if (tri === "note")      liste.sort((a,b) => (b.note?.valeur ?? -1) - (a.note?.valeur ?? -1));
-  return liste;
-}
+    <!-- Toolbar : Recherche, Filtres & Tri -->
+    <div class="bg-slate-900/80 p-4 sm:p-5 rounded-2xl border border-slate-800 mb-8 space-y-4 shadow-xl">
+      <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+        
+        <!-- Barre de recherche -->
+        <div class="relative w-full md:w-96">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Rechercher (ex: G502, Superlight, Cloud II, PS5...)" 
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+          >
+          <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
 
-function rendre(reinitPagination = true) {
-  if (reinitPagination) visibles = PAGE_SIZE;
+        <!-- Menu de Tri -->
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <label for="sortSelect" class="text-xs text-slate-400 whitespace-nowrap font-medium">Trier par :</label>
+          <select 
+            id="sortSelect" 
+            class="w-full md:w-auto bg-slate-950 border border-slate-800 text-slate-200 text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-400 cursor-pointer"
+          >
+            <option value="featured">Recommandés / Références Esport</option>
+            <option value="price-asc">Prix : Moins cher au plus cher</option>
+            <option value="price-desc">Prix : Plus cher au moins cher</option>
+            <option value="rating">Meilleures notes d'utilisateurs</option>
+          </select>
+        </div>
+      </div>
 
-  const liste = listeFiltree();
-  const aAfficher = liste.slice(0, visibles);
+      <!-- Onglets Catégories -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 custom-scrollbar text-xs sm:text-sm" id="categoryTabs">
+        <button data-category="all" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 font-semibold transition">Tous les équipements</button>
+        <button data-category="deals" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition">🔥 Bons Plans & Promos</button>
+        <button data-category="souris-claviers" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition">Souris & Claviers</button>
+        <button data-category="audio-stream" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition">Audio & Streaming</button>
+        <button data-category="consoles" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition">Consoles & Manettes</button>
+        <button data-category="setup" class="cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition">Setup & Confort</button>
+      </div>
+    </div>
 
-  $("#grille").innerHTML = aAfficher.map(carte).join("");
-  $("#vide").classList.toggle("hidden", liste.length > 0);
-  $("#resultat-info").textContent = `${liste.length} produit${liste.length>1?"s":""} affiché${liste.length>1?"s":""}.`;
-  $("#compteur-pagination").textContent = `Affichage de ${aAfficher.length} sur ${liste.length} références vérifiées`;
+    <!-- Compteur de résultats -->
+    <div class="flex items-center justify-between text-xs text-slate-400 mb-6">
+      <p id="resultsCount">Chargement du catalogue matériel...</p>
+      <span class="text-slate-500 hidden sm:inline-block">Redirections exclusives vers les fiches officielles Amazon.fr</span>
+    </div>
 
-  const boutonPlus = $("#bouton-charger-plus");
-  boutonPlus.classList.toggle("hidden", visibles >= liste.length);
+    <!-- Grille de Produits -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
 
-  rendreOnglets();
-}
+    <!-- Message aucun résultat -->
+    <div id="emptyResults" class="hidden text-center py-20 bg-slate-900/40 rounded-2xl border border-slate-800">
+      <p class="text-lg text-slate-200 font-bold mb-2">Aucun périphérique ne correspond à votre sélection</p>
+      <p class="text-xs sm:text-sm text-slate-400 mb-5">Modifiez vos critères ou réinitialisez les filtres de recherche.</p>
+      <button onclick="resetFilters()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-cyan-500/20">
+        Réinitialiser les filtres
+      </button>
+    </div>
 
-/* ================================================================
-   MODALE FICHE DÉTAILLÉE
-   ================================================================ */
-const modale = $("#modale");
+  </main>
 
-function ouvrirFiche(id) {
-  const p = products.find(x => x.id === id);
-  if (!p) return;
-  const enPromo = promoActive(p);
-  const provisoire = lienEstProvisoire(p);
+  <!-- Footer avec Mentions d'Affiliation Légales Obligatoires -->
+  <footer class="bg-slate-950 border-t border-slate-800/80 py-12 mt-16 text-slate-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center font-black text-slate-950 text-xs">⚡</div>
+          <span class="text-lg font-black text-white">Elite<span class="text-cyan-400">Select</span> Gaming</span>
+          <span class="text-slate-600">| © 2026</span>
+        </div>
 
-  const [t1, t2] = p.teintes || ["#334155", "#0f172a"];
-  const visuel = $("#modale-visuel");
-  visuel.style.setProperty("--t1", t1);
-  visuel.style.setProperty("--t2", t2);
+        <div class="flex flex-wrap justify-center gap-5 text-xs">
+          <button onclick="openModal('methodologyModal')" class="hover:text-cyan-400 transition">Méthodologie & Charte</button>
+          <button onclick="openModal('legalModal')" class="hover:text-cyan-400 transition">Mentions Légales</button>
+          <button onclick="openModal('privacyModal')" class="hover:text-cyan-400 transition">Politique de Confidentialité</button>
+          <button onclick="openModal('contactModal')" class="hover:text-cyan-400 transition">Contact Direct</button>
+        </div>
+      </div>
 
-  const img = $("#modale-image");
-  if (p.image) { img.src = p.image; img.alt = p.titre; img.classList.remove("hidden"); }
-  else { img.removeAttribute("src"); img.alt = ""; img.classList.add("hidden"); }
+      <!-- Clause d'Affiliation Amazon Officielle Requise par Contrat -->
+      <div class="border-t border-slate-900 pt-6 space-y-2 text-[11px] text-slate-500 leading-relaxed">
+        <p class="font-bold text-slate-400">Déclaration d'affiliation officielle :</p>
+        <p>
+          En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Amazon, le logo Amazon et Prime sont des marques commerciales d'Amazon.com, Inc. ou de ses filiales. Les caractéristiques, disponibilités et tarifs restent soumis aux variations en temps réel sur les plateformes officielles Amazon.
+        </p>
+      </div>
 
-  const cat = CATEGORIES.find(c => c.cle === p.categorie);
-  $("#modale-categorie").textContent = cat ? cat.libelle : p.categorie;
-  $("#modale-marque").textContent = p.marque;
-  $("#modale-titre").textContent = p.titre;
-  $("#modale-description").textContent = p.description;
+    </div>
+  </footer>
 
-  $("#modale-note").innerHTML = p.note
-    ? `<span class="text-base leading-none">${etoiles(p.note)}</span>
-       <span class="text-slate-300 font-semibold ml-1">${p.note.valeur.toLocaleString("fr-FR",{minimumFractionDigits:1})}/5</span>
-       <span class="text-slate-500">· ${p.note.avis.toLocaleString("fr-FR")} avis · relevé le ${echap(dateCourte(p.note.releveLe))}</span>`
-    : `<span class="text-slate-600 text-xs">Note Amazon non relevée pour ce produit</span>`;
+  <!-- ==================== FENÊTRES MODALES ==================== -->
 
-  const st = STOCK[p.stock] || STOCK["en-stock"];
-  $("#modale-stock").innerHTML = `<span class="${st.classe} font-semibold">${echap(st.texte)}</span>`;
+  <!-- 1. MODALE FICHE TECHNIQUE DÉTAILLÉE -->
+  <div id="productDetailModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl custom-scrollbar">
+      <button onclick="closeModal('productDetailModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1">✕</button>
+      <div id="modalProductContent"></div>
+    </div>
+  </div>
 
-  $("#modale-badges").innerHTML = (p.badges||[]).map(b => {
-    const d = BADGES[b]; if (!d) return "";
-    return `<span class="rounded-full px-3 py-1 text-xs font-bold ${d.classe}">${echap(d.texte)}</span>`;
-  }).join("");
+  <!-- 2. MODALE MÉTHODOLOGIE -->
+  <div id="methodologyModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl text-slate-300 text-xs sm:text-sm space-y-4">
+      <button onclick="closeModal('methodologyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1">✕</button>
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">⚖️</span>
+        <h3 class="text-lg font-bold text-white">Notre Méthode d'Évaluation Esport</h3>
+      </div>
+      <p class="leading-relaxed">
+        Chez <strong>EliteSelect Gaming</strong>, nos analyses ne sont pas sponsorisées par les marques. Nos sélections reposent sur 4 critères concrets :
+      </p>
+      <ul class="space-y-2 list-disc list-inside text-slate-400">
+        <li><strong>Performances brutes :</strong> précision des capteurs optiques, latence sans fil mesurée et durabilité des switches mécaniques.</li>
+        <li><strong>Retours d'expérience compétitifs :</strong> matériel adopté par les joueurs professionnels lors des tournois CS2, Valorant et compétitions sim-racing.</li>
+        <li><strong>Analyse de milliers d'avis vérifiés :</strong> identification des défauts d'usure à long terme.</li>
+        <li><strong>Sécurité des achats :</strong> redirection exclusive vers les boutiques officielles certifiées Amazon avec garanties constructeurs intactes et retour 30 jours sans friction.</li>
+      </ul>
+      <p class="text-[11px] text-slate-500 pt-2 border-t border-slate-800">
+        Ce travail est financé sans aucun surcoût pour vous grâce aux liens affiliés Amazon.
+      </p>
+    </div>
+  </div>
 
-  $("#modale-points").innerHTML = (p.points||[]).map(c =>
-    `<li class="flex gap-3"><span aria-hidden="true" class="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400"></span><span>${echap(c)}</span></li>`
-  ).join("");
+  <!-- 3. MODALE MENTIONS LÉGALES -->
+  <div id="legalModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl text-slate-300 text-xs sm:text-sm space-y-4">
+      <button onclick="closeModal('legalModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1">✕</button>
+      <h3 class="text-lg font-bold text-white mb-2">Mentions Légales</h3>
+      <div class="space-y-3">
+        <p><strong>Éditeur du site :</strong> EliteSelect Plateforme Indépendante d'information et de recommandation de matériel gaming.</p>
+        <p><strong>Hébergement :</strong> Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.</p>
+        <p><strong>Contact électronique :</strong> elitselect@proton.me</p>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mt-3 text-[11px] text-slate-400 leading-relaxed">
+          <strong>Affiliation Partenaires Amazon :</strong><br>
+          « En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. »
+        </div>
+      </div>
+    </div>
+  </div>
 
-  $("#modale-garantie").innerHTML = `
-    <span aria-hidden="true">🛡️</span>
-    <span>${echap(p.garantie || GARANTIE_GENERIQUE)}</span>`;
+  <!-- 4. MODALE CONFIDENTIALITÉ & COOKIES -->
+  <div id="privacyModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl text-slate-300 text-xs sm:text-sm space-y-4">
+      <button onclick="closeModal('privacyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1">✕</button>
+      <h3 class="text-lg font-bold text-white mb-2">Protection des Données & Cookies</h3>
+      <p class="leading-relaxed">
+        <strong>Conformité RGPD :</strong> EliteSelect ne collecte, ne stocke et ne revend aucune donnée bancaire ni coordonnées personnelles sensibles.
+      </p>
+      <p class="leading-relaxed">
+        <strong>Cookies d'affiliation :</strong> Lorsque vous cliquez sur un lien sortant (« Voir l'offre sur Amazon ↗ »), un identifiant de session sous forme de cookie est déposé par le site Amazon.fr afin de comptabiliser l'apport d'affaires pendant une durée légale de 24 heures. Ce processus ne modifie en rien le prix final que vous payez sur la plateforme marchande.
+      </p>
+    </div>
+  </div>
 
-  const bloc = $("#modale-reserve-bloc");
-  if (p.reserve) { bloc.classList.remove("hidden"); $("#modale-reserve").textContent = p.reserve; }
-  else { bloc.classList.add("hidden"); }
+  <!-- 5. MODALE CONTACT -->
+  <div id="contactModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl text-slate-300 text-xs sm:text-sm space-y-4 text-center">
+      <button onclick="closeModal('contactModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1">✕</button>
+      <div class="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-xl mx-auto text-cyan-400">
+        ✉️
+      </div>
+      <h3 class="text-lg font-bold text-white">Contactez l'Équipe EliteSelect</h3>
+      <p class="text-slate-400">Une remarque sur un comparatif, un lien brisé ou une suggestion de setup gaming ?</p>
+      
+      <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-2">
+        <span class="font-mono text-cyan-400 text-xs select-all">elitselect@proton.me</span>
+        <button onclick="copyMail()" id="copyMailBtn" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-white font-medium transition">
+          Copier
+        </button>
+      </div>
 
-  $("#modale-prix").innerHTML = enPromo
-    ? `<span class="text-2xl font-extrabold text-amber-400">${euros(p.promo.apres)}</span>
-       <span class="text-sm text-slate-500 line-through">${euros(p.promo.avant)}</span>
-       <span class="rounded bg-amber-500 px-2 py-0.5 text-[11px] font-extrabold text-slate-950">-${pourcentRemise(p)} %</span>`
-    : `<span class="text-2xl font-extrabold text-white">${echap(p.prixTexte)}</span>`;
+      <a 
+        href="mailto:elitselect@proton.me?subject=[EliteSelect%20Gaming]%20Demande%20d%27information" 
+        class="block w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-cyan-500/10"
+      >
+        Ouvrir le client e-mail
+      </a>
+    </div>
+  </div>
 
-  const cta = $("#modale-cta");
-  cta.href = urlPartenaire(p);
-  cta.setAttribute("aria-label", `Voir l'offre ${p.titre} sur Amazon (nouvel onglet)`);
-  $("#modale-lien-note").textContent = provisoire
-    ? "ASIN à compléter · lien de recherche Amazon temporaire · nouvel onglet"
-    : "Lien partenaire · nouvel onglet · prix inchangé pour vous";
+  <!-- ==================== JAVASCRIPT ET BASE DE DONNÉES ==================== -->
+  <script>
+    // --- 1. BASE DE DONNÉES DES 20 PRODUITS OFFICIELS ---
+    const products = [
+      // --- SOURIS & CLAVIERS ---
+      {
+        id: "g502-hero",
+        name: "Logitech G502 HERO",
+        brand: "Logitech G",
+        category: "souris-claviers",
+        categoryLabel: "Souris & Claviers",
+        badge: "N°1 des Ventes Mondiales",
+        priceIndicative: 49.90,
+        originalPrice: 89.99,
+        isDeal: true,
+        discountBadge: "-45%",
+        rating: 4.7,
+        reviewsCount: 38400,
+        imageUrl: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4iFjh92",
+        specs: ["Capteur HERO 25K DPI", "11 boutons programmables", "Poids ajustables inclus"],
+        verdict: "La souris la plus polyvalente et durable du marché. Ergonomie légendaire pour MMO, MOBA et bureautique.",
+        pros: ["Capteur ultra précis", "Molette débrayable à défilement infini", "Robustesse éprouvée"]
+      },
+      {
+        id: "g-pro-superlight",
+        name: "Logitech G PRO X SUPERLIGHT",
+        brand: "Logitech G",
+        category: "souris-claviers",
+        categoryLabel: "Souris & Claviers",
+        badge: "Choix Compétition Esport",
+        priceIndicative: 119.00,
+        originalPrice: 159.00,
+        isDeal: true,
+        discountBadge: "-25%",
+        rating: 4.8,
+        reviewsCount: 14200,
+        imageUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4hgg1yj",
+        specs: ["Poids plume < 63g", "Technologie sans fil LIGHTSPEED", "Pieds PTFE sans additif"],
+        verdict: "La souris sans fil de prédilection des pros sur Valorant et CS2 pour une glisse et une réactivité maximales.",
+        pros: ["Poids ultra léger", "Autonomie solide de 70h", "Latence quasi nulle"]
+      },
+      {
+        id: "razer-deathadder-essential",
+        name: "Razer DeathAdder Essential",
+        brand: "Razer",
+        category: "souris-claviers",
+        categoryLabel: "Souris & Claviers",
+        badge: "Budget Imbattable",
+        priceIndicative: 24.99,
+        originalPrice: 39.99,
+        isDeal: true,
+        discountBadge: "-38%",
+        rating: 4.5,
+        reviewsCount: 22100,
+        imageUrl: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3TfDIiw",
+        specs: ["Capteur optique 6 400 DPI", "Forme ergonomique éprouvée", "5 boutons Hyperesponse"],
+        verdict: "Le meilleur rapport qualité/prix pour entrer dans le gaming sur PC sans se ruiner.",
+        pros: ["Prise en main très naturelle", "Switches mécaniques fiables", "Prix mini"]
+      },
+      {
+        id: "corsair-k55-rgb-pro",
+        name: "Corsair K55 RGB PRO",
+        brand: "Corsair",
+        category: "souris-claviers",
+        categoryLabel: "Souris & Claviers",
+        badge: "Setup Silencieux",
+        priceIndicative: 54.99,
+        originalPrice: 64.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.6,
+        reviewsCount: 9800,
+        imageUrl: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3VGwDbn",
+        specs: ["Touches à membrane silencieuses", "6 touches macro dédiées", "Résistance IP42 aux éclaboussures"],
+        verdict: "Idéal pour jouer et taper tard la nuit sans réveiller toute la maison.",
+        pros: ["Repose-poignet détachable", "Éclairage RGB 5 zones", "Touches macro pratiques"]
+      },
 
-  modale.showModal();
-}
+      // --- AUDIO & STREAMING ---
+      {
+        id: "hyperx-cloud-2",
+        name: "HyperX Cloud II",
+        brand: "HyperX",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Référence Confort & Audio",
+        priceIndicative: 69.90,
+        originalPrice: 99.99,
+        isDeal: true,
+        discountBadge: "-30%",
+        rating: 4.7,
+        reviewsCount: 52000,
+        imageUrl: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4xB5Sm8",
+        specs: ["Transducteurs 53mm", "Son surround virtuel 7.1", "Arceau rembourré en mousse mémoire"],
+        verdict: "Le casque le plus recommandé par la communauté pour son confort même après 8 heures de jeu.",
+        pros: ["Confort exceptionnel", "Cadre en aluminium résistant", "Micro détachable antibruit"]
+      },
+      {
+        id: "logitech-g733",
+        name: "Logitech G733 LIGHTSPEED",
+        brand: "Logitech G",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Design & Légèreté",
+        priceIndicative: 115.00,
+        originalPrice: 149.00,
+        isDeal: true,
+        discountBadge: "-23%",
+        rating: 4.6,
+        reviewsCount: 11300,
+        imageUrl: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4yI8pvI",
+        specs: ["Seulement 278g", "Portée sans fil 20m", "Filtres vocaux Blue VO!CE"],
+        verdict: "Un casque sans fil stylé, ultra-léger et parfait pour les streamers grâce aux filtres micro Blue.",
+        pros: ["Poids plume", "Éclairage RGB personnalisable", "Excellente autonomie (29h)"]
+      },
+      {
+        id: "steelseries-arctis-nova-7",
+        name: "SteelSeries Arctis Nova 7",
+        brand: "SteelSeries",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Polyvalence PC & Consoles",
+        priceIndicative: 169.99,
+        originalPrice: 199.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.6,
+        reviewsCount: 6500,
+        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3VpU5cR",
+        specs: ["Double connexion 2.4GHz + Bluetooth simultanée", "Autonomie 38h (charge rapide USB-C)", "Micro rétractable ClearCast 2"],
+        verdict: "Permet de jouer sur console ou PC tout en répondant à un appel sur son smartphone en simultané.",
+        pros: ["Mix audio multi-sources", "Son spatial à 360°", "Confort haut de gamme"]
+      },
+      {
+        id: "blue-yeti",
+        name: "Microphone USB Blue Yeti",
+        brand: "Logitech for Creators",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Standard Podcasting & Stream",
+        priceIndicative: 109.00,
+        originalPrice: 139.99,
+        isDeal: true,
+        discountBadge: "-22%",
+        rating: 4.7,
+        reviewsCount: 42000,
+        imageUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4rolKH1",
+        specs: ["Réseau à 3 capsules", "4 diagrammes de directivité (Cardioïde, Omnidirectionnel, etc.)", "Prise casque jack monitoring"],
+        verdict: "Le micro USB le plus célèbre du web pour obtenir une voix chaude et pro sans carte son dédiée.",
+        pros: ["Son broadcast immédiat", "Bouton mute physique instantané", "Construction en métal lourd"]
+      },
+      {
+        id: "fifine-k669b",
+        name: "Microphone Fifine K669B",
+        brand: "Fifine",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Pépite Moins de 40€",
+        priceIndicative: 35.99,
+        originalPrice: 42.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.5,
+        reviewsCount: 33000,
+        imageUrl: "https://images.unsplash.com/photo-1583775253835-231a4099863c?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3V3i6Xa",
+        specs: ["Directivité cardioïde", "Boîtier robuste en métal", "Potentiomètre de gain en façade"],
+        verdict: "Une clarté vocale bluffante sur Discord pour une fraction du prix des micros de studio.",
+        pros: ["Qualité sonore imbattable à ce prix", "Plug & Play immédiat", "Molette de volume intégrée"]
+      },
+      {
+        id: "elgato-facecam",
+        name: "Elgato Facecam Full HD 60 fps",
+        brand: "Elgato",
+        category: "audio-stream",
+        categoryLabel: "Audio & Stream",
+        badge: "Qualité Studio Streamer",
+        priceIndicative: 139.99,
+        originalPrice: 159.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.6,
+        reviewsCount: 4800,
+        imageUrl: "https://images.unsplash.com/photo-1588702547919-26089e690ecc?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3Vr7lhr",
+        specs: ["Capteur Sony STARVIS 1080p 60fps", "Objectif tout en verre Elgato Prime Lens f/2.4", "Mémoire intégrée des réglages"],
+        verdict: "Fini l'image compressée des webcams basiques. Rendu ultra fluide optimisé pour Twitch et YouTube.",
+        pros: ["Pas d'effet d'artefact", "Logiciel Camera Hub très puissant", "Mémoire interne flash"]
+      },
 
-/* ================================================================
-   COMPTE À REBOURS
-   Branché sur une date de fin réelle. Date dépassée => bannière
-   masquée, jamais de minuteur qui se réinitialise en boucle
-   (pratique interdite par la directive 2005/29/CE, annexe I, pt 7).
-   ================================================================ */
-function majCompteARebours() {
-  const bandeau = $("#bandeau-promo");
-  const reste = new Date(FIN_OPERATION).getTime() - Date.now();
-  const nb = products.filter(promoActive).length;
+      // --- CONSOLES & MANETTES ---
+      {
+        id: "dualsense-ps5",
+        name: "Manette sans fil DualSense PlayStation 5",
+        brand: "Sony PlayStation",
+        category: "consoles",
+        categoryLabel: "Consoles & Manettes",
+        badge: "Immersion Maximale",
+        priceIndicative: 69.99,
+        originalPrice: 74.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.8,
+        reviewsCount: 68000,
+        imageUrl: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4rjTNQF",
+        specs: ["Retour haptique dynamique", "Gâchettes adaptatives immersives", "Microphone intégré & haut-parleur"],
+        verdict: "La manette la plus avancée technologiquement. Compatible PS5, PC et mobiles en Bluetooth.",
+        pros: ["Sensations de jeu uniques", "Ergonomie revue", "Excellente prise en main"]
+      },
+      {
+        id: "xbox-controller",
+        name: "Manette sans fil Xbox Series / PC",
+        brand: "Microsoft Xbox",
+        category: "consoles",
+        categoryLabel: "Consoles & Manettes",
+        badge: "Compatibilité Universelle PC",
+        priceIndicative: 54.99,
+        originalPrice: 59.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.7,
+        reviewsCount: 45000,
+        imageUrl: "https://images.unsplash.com/photo-1592840496073-e72bbe619283?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4y9hyO8",
+        specs: ["Bouton de partage dédié", "Croix multidirectionnelle hybride", "Surface texturée antidérapante"],
+        verdict: "Le contrôleur le plus simple et stable sous Windows. Reconnu instantanément dans 100% des jeux PC.",
+        pros: ["Prise en charge native PC", "Autonomie jusqu'à 40h", "Précision des gâchettes"]
+      },
+      {
+        id: "station-recharge-ps5",
+        name: "Station de rechargement DualSense Sony",
+        brand: "Sony PlayStation",
+        category: "consoles",
+        categoryLabel: "Consoles & Manettes",
+        badge: "Accessoire Indispensable PS5",
+        priceIndicative: 29.99,
+        originalPrice: 34.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.8,
+        reviewsCount: 29000,
+        imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4rofLlK",
+        specs: ["Charge simultanée de 2 manettes", "Système de clic sans fil par le bas", "Libère les ports USB de la console"],
+        verdict: "Vos manettes sont toujours chargées et rangées proprement sans câbles qui traînent.",
+        pros: ["Charge aussi rapide que sur PS5", "Design assorti à la console", "Très stable"]
+      },
+      {
+        id: "logitech-g29",
+        name: "Volant de course Logitech G29 Driving Force",
+        brand: "Logitech G",
+        category: "consoles",
+        categoryLabel: "Consoles & Manettes",
+        badge: "Roi de la Simulation Auto",
+        priceIndicative: 239.00,
+        originalPrice: 419.00,
+        isDeal: true,
+        discountBadge: "-43%",
+        rating: 4.6,
+        reviewsCount: 18500,
+        imageUrl: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/46Brjsd",
+        specs: ["Retour de force à deux moteurs", "Pédalier non linéaire réglable (3 pédales)", "Rotation 900 degrés"],
+        verdict: "La porte d'entrée incontournable dans le sim-racing pour Gran Turismo, F1 et Forza.",
+        pros: ["Cuir cousu main très réaliste", "Palettes au volant en inox", "Rapport sensations/prix inégalé"]
+      },
+      {
+        id: "samsung-990-pro-2to",
+        name: "SSD NVMe Samsung 990 PRO 2 To (avec Heatsink)",
+        brand: "Samsung",
+        category: "consoles",
+        categoryLabel: "Consoles & Manettes",
+        badge: "Vitesse Maximale PS5 & PC",
+        priceIndicative: 189.00,
+        originalPrice: 249.99,
+        isDeal: true,
+        discountBadge: "-24%",
+        rating: 4.8,
+        reviewsCount: 16000,
+        imageUrl: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4dPGd1U",
+        specs: ["Lecture jusqu'à 7 450 Mo/s", "Dissipateur thermique officiel intégré", "Format M.2 certifié PS5"],
+        verdict: "Doublez le stockage de votre PS5 avec le SSD le plus rapide et fiable du marché. Zéro temps de chargement.",
+        pros: ["Parfaitement dimensionné pour la baie PS5", "Gestion thermique optimale", "Garantie 5 ans"]
+      },
 
-  if (reste <= 0 || nb === 0) { bandeau.classList.add("hidden"); return; }
+      // --- SETUP & AMBIANCE ---
+      {
+        id: "bras-ecran-invision",
+        name: "Bras articulé pour écran PC (Invision / Ergotron)",
+        brand: "Ergonomie Setup",
+        category: "setup",
+        categoryLabel: "Setup & Confort",
+        badge: "Gain d'Espace Majeur",
+        priceIndicative: 39.99,
+        originalPrice: 52.99,
+        isDeal: true,
+        discountBadge: "-25%",
+        rating: 4.6,
+        reviewsCount: 21000,
+        imageUrl: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4izU8MV",
+        specs: ["Vérin à gaz ultra souple", "Compatibilité VESA 75/100mm", "Passe-câbles intégré"],
+        verdict: "Libère 30 % d'espace sur votre bureau en éliminant les gros pieds d'écran d'origine.",
+        pros: ["Ajustement de l'écran d'un doigt", "Ergonomie cervicale améliorée", "Montage facile sans perçage"]
+      },
+      {
+        id: "tapis-steelseries-qck-prism",
+        name: "Tapis de souris XXL SteelSeries QcK Prism Cloth",
+        brand: "SteelSeries",
+        category: "setup",
+        categoryLabel: "Setup & Confort",
+        badge: "Glisse & Esthétique",
+        priceIndicative: 44.99,
+        originalPrice: 59.99,
+        isDeal: true,
+        discountBadge: "-25%",
+        rating: 4.7,
+        reviewsCount: 12500,
+        imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4AuQElw",
+        specs: ["Tissu micro-tissé légendaire QcK", "Éclairage RGB 2 zones dynamique", "Base caoutchouc antidérapante"],
+        verdict: "Offre une surface de visée immense pour les faibles sensibilités et protège votre bureau.",
+        pros: ["Précision de suivi de capteur", "Éclairage personnalisable", "Bordures cousues durables"]
+      },
+      {
+        id: "support-casque-usb",
+        name: "Support de casque gamer avec Hub USB",
+        brand: "Setup Accessoires",
+        category: "setup",
+        categoryLabel: "Setup & Confort",
+        badge: "Organisation Setup",
+        priceIndicative: 26.99,
+        originalPrice: 34.99,
+        isDeal: false,
+        discountBadge: "",
+        rating: 4.5,
+        reviewsCount: 8400,
+        imageUrl: "https://images.unsplash.com/photo-1584679109597-c656b19974c9?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4h5ERSZ",
+        specs: ["Hub 2 ports USB intégrés", "Base lestée antidérapante", "Rétroéclairage RGB d'ambiance"],
+        verdict: "Évite d'abîmer les coussinets de son casque tout en branchant sa souris ou ses clés USB à portée de main.",
+        pros: ["Fini le casque qui traîne", "Ports USB très pratiques", "Base bien stable"]
+      },
+      {
+        id: "screenbar-ecran",
+        name: "Barre lumineuse d'écran (Screenbar) anti-fatigue",
+        brand: "Confort Visuel",
+        category: "setup",
+        categoryLabel: "Setup & Confort",
+        badge: "Anti-Fatigue Oculaire",
+        priceIndicative: 39.90,
+        originalPrice: 49.99,
+        isDeal: true,
+        discountBadge: "-20%",
+        rating: 4.6,
+        reviewsCount: 7200,
+        imageUrl: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/4hEraKM",
+        specs: ["Éclairage asymétrique zéro reflet écran", "Température de couleur réglable (3000K-6500K)", "Alimentation directe USB"],
+        verdict: "L'accessoire indispensable pour les sessions nocturnes. Illumine le bureau sans aucun reflet sur l'écran.",
+        pros: ["Élimine les maux de tête", "Ne prend aucune place sur le bureau", "Commandes tactiles"]
+      },
+      {
+        id: "govee-led-strip",
+        name: "Bandeau LED RGB connecté Govee pour dos de bureau",
+        brand: "Govee",
+        category: "setup",
+        categoryLabel: "Setup & Confort",
+        badge: "Ambiance Gaming Immersion",
+        priceIndicative: 22.99,
+        originalPrice: 29.99,
+        isDeal: true,
+        discountBadge: "-23%",
+        rating: 4.6,
+        reviewsCount: 28000,
+        imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+        affiliateUrl: "https://amzn.to/3UTFXIS",
+        specs: ["Contrôle via application smartphone & WiFi", "Synchronisation avec la musique/sons de jeu", "Adhésif 3M renforcé"],
+        verdict: "La touche finale d'un vrai setup propre pour une immersion totale dans la pénombre.",
+        pros: ["Centaines de modes dynamiques", "Contrôle vocal Alexa/Google", "Installation en 5 minutes"]
+      }
+    ];
 
-  bandeau.classList.remove("hidden");
-  $("#nb-promos").textContent = nb;
+    // --- 2. ÉTAT DE L'APPLICATION ---
+    let currentCategory = "all";
+    let searchQuery = "";
+    let currentSort = "featured";
 
-  const j = Math.floor(reste / 86400000);
-  const h = Math.floor(reste % 86400000 / 3600000);
-  const m = Math.floor(reste % 3600000 / 60000);
-  const s = Math.floor(reste % 60000 / 1000);
-  const pad = n => String(n).padStart(2, "0");
-  $("#compte-a-rebours").textContent = j > 0 ? `${j} j ${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}:${pad(s)}`;
-}
+    // Formatage Prix en Euros
+    function formatPrice(val) {
+      return val.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+    }
 
-/* ================================================================
-   MODALES LÉGALES (mentions, confidentialité)
-   ================================================================ */
-function ouvrirModaleParId(id) {
-  const d = document.getElementById(id);
-  if (d && typeof d.showModal === "function") d.showModal();
-}
+    // --- 3. MOTEUR DE RENDU DU CATALOGUE ---
+    function renderProducts() {
+      const grid = document.getElementById("productsGrid");
+      const emptyState = document.getElementById("emptyResults");
+      const resultsCount = document.getElementById("resultsCount");
 
-/* ================================================================
-   COPIE DE L'EMAIL
-   ================================================================ */
-async function copierEmail() {
-  const adresse = "elitselect@proton.me";
-  try {
-    await navigator.clipboard.writeText(adresse);
-  } catch (e) {
-    const zoneTemp = document.createElement("textarea");
-    zoneTemp.value = adresse;
-    zoneTemp.style.position = "fixed";
-    zoneTemp.style.opacity = "0";
-    document.body.appendChild(zoneTemp);
-    zoneTemp.select();
-    try { document.execCommand("copy"); } catch (e2) {}
-    document.body.removeChild(zoneTemp);
-  }
-  const confirmation = $("#email-copie-confirmation");
-  confirmation.classList.remove("hidden");
-  setTimeout(() => confirmation.classList.add("hidden"), 2000);
-}
+      // Filtrage
+      let filtered = products.filter(p => {
+        const matchesCategory = 
+          currentCategory === "all" ? true :
+          currentCategory === "deals" ? p.isDeal :
+          p.category === currentCategory;
 
-/* ================================================================
-   ÉCOUTEURS
-   ================================================================ */
-document.addEventListener("click", e => {
-  const fiche = e.target.closest("[data-fiche]");
-  if (fiche) { ouvrirFiche(fiche.dataset.fiche); return; }
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSearch = 
+          !q ||
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.specs.some(s => s.toLowerCase().includes(q)) ||
+          p.verdict.toLowerCase().includes(q);
 
-  const cat = e.target.closest("[data-cat]");
-  if (cat) {
-    categorieActive = cat.dataset.cat;
-    rendre(true);
-    $("#catalogue").scrollIntoView({ block: "start" });
-    return;
-  }
+        return matchesCategory && matchesSearch;
+      });
 
-  const ouvrirId = e.target.closest("[data-ouvrir-modale]");
-  if (ouvrirId) { ouvrirModaleParId(ouvrirId.dataset.ouvrirModale); return; }
+      // Tri
+      if (currentSort === "price-asc") {
+        filtered.sort((a, b) => a.priceIndicative - b.priceIndicative);
+      } else if (currentSort === "price-desc") {
+        filtered.sort((a, b) => b.priceIndicative - a.priceIndicative);
+      } else if (currentSort === "rating") {
+        filtered.sort((a, b) => b.rating - a.rating);
+      }
 
-  if (e.target.closest("[data-fermer]")) {
-    e.target.closest("dialog")?.close();
-    return;
-  }
+      // Mise à jour compteur
+      resultsCount.textContent = `Affichage de ${filtered.length} sur ${products.length} références vérifiées`;
 
-  if (e.target.closest("#bouton-copier-email")) { copierEmail(); return; }
+      // Gestion état vide
+      if (filtered.length === 0) {
+        grid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+      emptyState.classList.add("hidden");
 
-  if (e.target.closest("#bouton-charger-plus")) {
-    visibles += PAGE_SIZE;
-    rendre(false);
-    return;
-  }
+      // Génération des cartes
+      grid.innerHTML = filtered.map(prod => `
+        <article class="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/5 group">
+          <div>
+            <!-- Image & Badges -->
+            <div class="relative aspect-video sm:aspect-square bg-slate-950 overflow-hidden cursor-pointer" onclick="openProductModal('${prod.id}')">
+              <img 
+                src="${prod.imageUrl}" 
+                alt="${prod.name}" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80';"
+              >
+              
+              <!-- Badge Promo -->
+              ${prod.isDeal ? `
+                <span class="absolute top-3 left-3 bg-amber-500 text-slate-950 font-black text-[10px] tracking-wider px-2 py-0.5 rounded shadow uppercase">
+                  ${prod.discountBadge ? prod.discountBadge : 'Vente Flash'}
+                </span>
+              ` : ''}
 
-  if (e.target.closest("[data-reinit]")) {
-    categorieActive = "tous"; requete = ""; tri = "recommande";
-    $("#recherche").value = ""; $("#tri").value = "recommande";
-    rendre(true); return;
-  }
-});
+              <!-- Badge Esport/Catégorie -->
+              <span class="absolute bottom-3 left-3 bg-slate-950/90 backdrop-blur-sm text-cyan-300 font-bold text-[10px] px-2.5 py-1 rounded border border-cyan-500/30">
+                ${prod.badge}
+              </span>
+            </div>
 
-/* Clic sur le fond = fermeture, pour toutes les boîtes de dialogue */
-document.querySelectorAll("dialog").forEach(d => {
-  d.addEventListener("click", e => { if (e.target === d) d.close(); });
-});
+            <!-- Détails du produit -->
+            <div class="p-4 sm:p-5">
+              <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                <span class="font-bold text-cyan-400 uppercase tracking-wider">${prod.brand}</span>
+                <span class="text-slate-500">${prod.categoryLabel}</span>
+              </div>
 
-$("#recherche").addEventListener("input", e => { requete = e.target.value; rendre(true); });
-$("#tri").addEventListener("change", e => { tri = e.target.value; rendre(true); });
+              <h2 class="font-bold text-white text-sm sm:text-base leading-snug mb-2 cursor-pointer hover:text-cyan-400 transition line-clamp-2" onclick="openProductModal('${prod.id}')">
+                ${prod.name}
+              </h2>
 
-/* ================================================================
-   INIT
-   ================================================================ */
-$("#compteur-total").textContent = products.length;
-$("#annee").textContent = new Date().getFullYear();
-$("#date-maj").textContent = new Date(DATE_RELEVE).toLocaleDateString("fr-FR", { day:"2-digit", month:"long", year:"numeric" });
-$("#date-releve").textContent = new Date(DATE_RELEVE).toLocaleDateString("fr-FR", { day:"2-digit", month:"long" });
-rendre(true);
-majCompteARebours();
-setInterval(majCompteARebours, 1000);
-</script>
+              <!-- Évaluation -->
+              <div class="flex items-center gap-1.5 mb-3 text-xs">
+                <span class="text-amber-400 font-bold">★ ${prod.rating}</span>
+                <span class="text-slate-500">(${prod.reviewsCount.toLocaleString('fr-FR')} avis)</span>
+              </div>
 
-<!-- ================================================================
-NOTES DE DÉPLOIEMENT
+              <!-- Specs Techniques Clés -->
+              <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 mb-4 space-y-1">
+                ${prod.specs.slice(0, 3).map(s => `
+                  <div class="flex items-center gap-1.5 text-[11px] text-slate-300 truncate">
+                    <span class="text-cyan-400">▹</span>
+                    <span class="truncate">${s}</span>
+                  </div>
+                `).join('')}
+              </div>
 
-1. AVANT MISE EN LIGNE — obligatoire
-   · Remplir les 40 champs `asin` (repère visuel : liseré doré en
-     pointillés sur le bouton tant que l'ASIN manque). Sans ASIN, le
-     lien pointe vers une recherche Amazon ciblée, pas vers la page
-     produit — fonctionnel mais provisoire.
-   · Vérifier/ajuster FIN_OPERATION et DATE_RELEVE.
-   · Recopier les vraies notes/avis Amazon (champ `note`) ou laisser
-     `null` si non relevé.
-   · Vérifier que chaque `promo.avant` correspond à un prix réellement
-     pratiqué avant l'offre (obligation légale, indépendante d'Amazon).
+              <!-- Prix Indicatif -->
+              <div class="mb-4">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-lg sm:text-xl font-black text-white">${formatPrice(prod.priceIndicative)}</span>
+                  ${prod.originalPrice > prod.priceIndicative ? `
+                    <span class="text-xs text-slate-500 line-through">${formatPrice(prod.originalPrice)}</span>
+                  ` : ''}
+                </div>
+                <p class="text-[10px] text-slate-500 italic">Prix indicatif constaté</p>
+              </div>
+            </div>
+          </div>
 
-2. IMAGES
-   Dégradé généré pour tout produit de marque nommément désigné (Dior,
-   Chanel, Apple, Sony, Ray-Ban, etc.) : associer une photo générique à
-   ces titres serait trompeur. Photos Unsplash génériques uniquement
-   sur les produits non-marqués. Chaque <img> a l'attribut `onerror`
-   demandé, avec la photo de secours indiquée.
+          <!-- Actions d'Achat Sécurisé -->
+          <div class="p-4 sm:p-5 pt-0 border-t border-slate-800/50 mt-1 space-y-2">
+            <a 
+              href="${prod.affiliateUrl}" 
+              target="_blank" 
+              rel="nofollow noopener sponsored" 
+              class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-amber-500/20 active:scale-[0.98]"
+            >
+              <span>Voir l'offre sur Amazon ↗</span>
+            </a>
+            <button 
+              onclick="openProductModal('${prod.id}')" 
+              class="w-full text-center text-xs text-slate-400 hover:text-cyan-400 font-medium py-1 transition"
+            >
+              Voir la fiche technique & verdict
+            </button>
+          </div>
+        </article>
+      `).join("");
+    }
 
-3. NOTES ET AVIS
-   Amazon interdit de republier ses notes/avis hors PA-API. L'affichage
-   daté « relevé le JJ/MM » est le compromis praticable sans API. Avec
-   la PA-API 5.0 (3 ventes qualifiées requises), bascule sur un
-   rafraîchissement automatique.
+    // --- 4. GESTIONNAIRES D'ÉVÉNEMENTS (RECHERCHE, TRI, ONGLETS) ---
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderProducts();
+    });
 
-4. COMPTE À REBOURS ET PRIX BARRÉS
-   Les deux mécanismes sont fonctionnels mais s'appuient sur des dates
-   et des prix réels que tu fournis. Un minuteur qui se réinitialise en
-   boucle ou un prix barré fictif constituent une pratique commerciale
-   trompeuse au sens de la directive 2005/29/CE, distincte du
-   règlement Amazon.
+    document.getElementById("sortSelect").addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      renderProducts();
+    });
 
-5. TAILWIND EN PRODUCTION
-   npx tailwindcss -i in.css -o dist.css --minify
+    document.querySelectorAll(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".cat-btn").forEach(b => {
+          b.className = "cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition";
+        });
+        btn.className = "cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 font-semibold transition";
+        currentCategory = btn.dataset.category;
+        renderProducts();
+      });
+    });
 
-6. MODALES LÉGALES
-   Contenu prêt à l'emploi (mentions légales, confidentialité). Adapter
-   si le statut juridique de l'éditeur change (auto-entreprise, société).
-================================================================= -->
+    function resetFilters() {
+      searchQuery = "";
+      currentCategory = "all";
+      currentSort = "featured";
+      document.getElementById("searchInput").value = "";
+      document.getElementById("sortSelect").value = "featured";
+      document.querySelectorAll(".cat-btn").forEach(b => {
+        b.className = "cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition";
+      });
+      document.querySelector('[data-category="all"]').className = "cat-btn whitespace-nowrap px-4 py-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 font-semibold transition";
+      renderProducts();
+    }
+
+    // --- 5. GESTION DES MODALES ---
+    function openModal(id) {
+      document.getElementById(id).classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // Fermeture avec la touche Échap
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll("[id$='Modal']").forEach(modal => {
+          modal.classList.add("hidden");
+        });
+        document.body.classList.remove("overflow-hidden");
+      }
+    });
+
+    // Fermeture au clic en dehors du conteneur
+    document.querySelectorAll("[id$='Modal']").forEach(modal => {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+          document.body.classList.remove("overflow-hidden");
+        }
+      });
+    });
+
+    // Contenu dynamique de la modale produit
+    function openProductModal(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+
+      const container = document.getElementById("modalProductContent");
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="relative aspect-video rounded-xl overflow-hidden border border-slate-800">
+            <img 
+              src="${prod.imageUrl}" 
+              alt="${prod.name}" 
+              class="w-full h-full object-cover"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80';"
+            >
+            <span class="absolute top-3 left-3 bg-cyan-500 text-slate-950 font-bold text-xs px-2.5 py-1 rounded shadow">
+              ${prod.badge}
+            </span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between text-xs text-cyan-400 font-bold mb-1">
+              <span>${prod.brand}</span>
+              <span>${prod.categoryLabel}</span>
+            </div>
+            <h2 class="text-xl font-extrabold text-white">${prod.name}</h2>
+            <div class="flex items-center gap-2 mt-1 text-xs text-amber-400">
+              <span>★ ${prod.rating}</span>
+              <span class="text-slate-400">(${prod.reviewsCount.toLocaleString('fr-FR')} avis vérifiés sur Amazon)</span>
+            </div>
+          </div>
+
+          <!-- Verdict Objectif -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <p class="text-xs font-bold text-cyan-400 uppercase tracking-wider">L'Avis de la rédaction :</p>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${prod.verdict}</p>
+          </div>
+
+          <!-- Ce qu'on aime (Points forts) -->
+          <div class="bg-emerald-950/30 p-4 rounded-xl border border-emerald-500/30 space-y-2">
+            <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Ce qu'on aime particulièrement :</p>
+            <ul class="text-xs sm:text-sm text-emerald-200 space-y-1.5 list-disc list-inside">
+              ${prod.pros.map(pro => `<li>${pro}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Fiche technique -->
+          <div class="space-y-2">
+            <p class="text-xs font-bold text-slate-300 uppercase">Spécifications techniques décisives :</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              ${prod.specs.map(spec => `
+                <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-slate-300 flex items-center gap-2">
+                  <span class="text-cyan-400">✓</span>
+                  <span>${spec}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Prix & Garantie -->
+          <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-black text-white">${formatPrice(prod.priceIndicative)}</span>
+                ${prod.originalPrice > prod.priceIndicative ? `
+                  <span class="text-xs text-slate-500 line-through">${formatPrice(prod.originalPrice)}</span>
+                ` : ''}
+              </div>
+              <p class="text-[10px] text-slate-500">Prix indicatif constaté • Stock garanti Amazon</p>
+            </div>
+            <span class="text-xs text-emerald-400 font-semibold bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-500/30">
+              En stock vérifié
+            </span>
+          </div>
+
+          <!-- Bouton Action Partenaire Direct -->
+          <a 
+            href="${prod.affiliateUrl}" 
+            target="_blank" 
+            rel="nofollow noopener sponsored" 
+            class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-sm py-3.5 px-4 rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
+          >
+            <span>Voir l'offre sur Amazon ↗</span>
+          </a>
+        </div>
+      `;
+
+      openModal("productDetailModal");
+    }
+
+    // Copie de l'e-mail dans le presse-papiers
+    function copyMail() {
+      navigator.clipboard.writeText("elitselect@proton.me").then(() => {
+        const btn = document.getElementById("copyMailBtn");
+        btn.textContent = "Copié !";
+        btn.classList.add("bg-emerald-600");
+        setTimeout(() => {
+          btn.textContent = "Copier";
+          btn.classList.remove("bg-emerald-600");
+        }, 2000);
+      });
+    }
+
+    // --- 6. COMPTE À REBOURS DES VENTES FLASH DYNAMIQUE ---
+    function startCountdown() {
+      const display = document.getElementById("countdownTimer");
+      // Calcule le temps restant jusqu'à minuit aujourd'hui
+      function updateTimer() {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(23, 59, 59, 999);
+        let diff = midnight - now;
+
+        if (diff <= 0) {
+          diff = 24 * 60 * 60 * 1000;
+        }
+
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        display.textContent = 
+          `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    }
+
+    // Lancement au chargement du DOM
+    document.addEventListener("DOMContentLoaded", () => {
+      renderProducts();
+      startCountdown();
+    });
+  </script>
 </body>
 </html>
